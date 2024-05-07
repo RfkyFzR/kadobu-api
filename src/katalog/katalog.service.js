@@ -12,8 +12,8 @@ async function getKatalogs(){
 
 async function createKatalog(formData){
     try {
-        const primaryKey = codeGenerator(formData.id)
-        formData.id = primaryKey;
+        const primaryKey = codeGenerator(formData.kode_produk)
+        formData.kode_produk = primaryKey;
         const users = await insertKatalog(formData);
         return users;
     } catch (error) {

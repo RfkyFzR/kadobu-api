@@ -2,7 +2,7 @@ const connection = require("../config/database.js");
 
 async function showKatalogs() {
   return new Promise((resolve, reject) => {
-    connection.query("SELECT * FROM tbl_katalog ORDER BY id desc", (error, results) => {
+    connection.query("SELECT * FROM tbl_katalog ORDER BY kode_produk desc", (error, results) => {
       if (error) {
         return reject(error)
       }
@@ -24,7 +24,7 @@ async function insertKatalog(formData) {
 
 async function updateKatalog(formData, id) {
   return new Promise((resolve, reject) => {
-    connection.query(`UPDATE tbl_katalog SET ? WHERE ID = ${id}`, formData, (error, results) => {
+    connection.query(`UPDATE tbl_katalog SET ? WHERE kode_produk = '${id}'`, formData, (error, results) => {
       if (error) {
         return reject(error)
       }
@@ -35,7 +35,7 @@ async function updateKatalog(formData, id) {
 
 async function deleteKatalog(id) {
   return new Promise((resolve, reject) => {
-    connection.query(`DELETE FROM tbl_katalog WHERE ID = ${id}`, (error, results) => {
+    connection.query(`DELETE FROM tbl_katalog WHERE kode_produk = '${id}'`, (error, results) => {
       if (error) {
         return reject(error)
       }

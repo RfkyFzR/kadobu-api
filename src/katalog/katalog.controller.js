@@ -35,7 +35,7 @@ router.post(
       });
     }
     let formData = {
-      id: req.body.kodeProduk,
+      kode_produk: req.body.kodeProduk,
       nama_produk: req.body.namaProduk,
       deskripsi_produk: req.body.deskripsiProduk,
       stok_produk: req.body.stokProduk,
@@ -78,7 +78,7 @@ router.patch(
     await editKatalog(formData, id);
     return res.status(200).json({
       status: true,
-      message: "Katalog berhasil ditambahkan!",
+      message: "Katalog berhasil dirubah!",
       data: formData,
     });
   }
@@ -87,7 +87,7 @@ router.patch(
 router.delete("/(:id)", async (req, res) => {
   let id = req.params.id;
   await removeKatalog(id);
-  const showKatalogs = await getKatalog();
+  const showKatalogs = await getKatalogs();
   return res.status(200).json({
     status: true,
     message: "Katalog berhasil dihapus!",
