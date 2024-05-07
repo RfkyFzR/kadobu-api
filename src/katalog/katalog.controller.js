@@ -109,7 +109,7 @@ router.get(
     const result = await searchKatalog(keywords);
     return res.status(200).json({
       status: true,
-      message: "Katalog berhasil ditemukansssssssssssssssssss!",
+      message: "Katalog berhasil ditemukan!",
       result,
     });
   }
