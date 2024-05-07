@@ -11,6 +11,17 @@ async function showPenggunas() {
   })
 }
 
+async function findPenggunasByEmail(email) {
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM tbl_pengguna WHERE email = '${email}'`, (error, results) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
+}
+
 async function insertPengguna(formData) {
   return new Promise((resolve, reject) => {
     connection.query('INSERT INTO tbl_pengguna SET ?', formData, (error, results) => {
@@ -25,4 +36,5 @@ async function insertPengguna(formData) {
 module.exports = {
   showPenggunas,
   insertPengguna,
+  findPenggunasByEmail,
 };
