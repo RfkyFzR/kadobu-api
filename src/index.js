@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const connection = require('./config/database');
 const app = express();
 const port = 3000;
@@ -9,6 +10,7 @@ const katalogController = require('./katalog/katalog.controller.js');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 // app.use(route);
 app.use(express.json());

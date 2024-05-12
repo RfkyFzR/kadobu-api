@@ -33,8 +33,20 @@ async function insertPengguna(formData) {
   })
 }
 
+async function updateToken(token, id){
+  return new Promise((resolve, reject) => {
+    connection.query(`UPDATE tbl_pengguna SET token = '${token}' WHERE ID = '${id}'`, (error, results) => {
+      if (error){
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
+}
+
 module.exports = {
   showPenggunas,
   insertPengguna,
   findPenggunasByEmail,
+  updateToken,
 };

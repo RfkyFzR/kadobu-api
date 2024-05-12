@@ -2,8 +2,10 @@ const {
   showPenggunas,
   insertPengguna,
   findPenggunasByEmail,
+  updateToken,
 } = require("./pengguna.repository.js");
-const { hashPassword, comparePassword } = require("../helper/hash.js");
+const { hashPassword, comparePassword,} = require("../helper/hash.js");
+const { generateToken } = require("../helper/tokengenerator.js")
 
 async function getPengguna() {
   try {
@@ -48,11 +50,10 @@ async function authentikasiPengguna(formData) {
       return isPasswordValid
         ? {
             isSuccess: true,
-            data: isPasswordValid,
+            data: users,
           }
         : {
             isSuccess: false,
-            data: isPasswordValid,
           };
     }
     return {
@@ -63,8 +64,19 @@ async function authentikasiPengguna(formData) {
   }
 }
 
+async function saveToken(id) {
+  try {
+    const token = generateToken()
+    await updateToken(token, id)
+    return token;
+  } catch (error) {
+    throw error;
+  }
+}
+
 module.exports = {
   getPengguna,
   createPengguna,
   authentikasiPengguna,
+  saveToken,
 };
