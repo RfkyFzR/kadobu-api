@@ -1,5 +1,6 @@
 const { showKatalogs, insertKatalog, updateKatalog, deleteKatalog, findKatalogs } = require("./katalog.repository.js");
 const codeGenerator = require('../helper/codegenerator.js')
+const fileUploader = require('../helper/fileAttachment.js')
 
 async function getKatalogs(){
     try {
