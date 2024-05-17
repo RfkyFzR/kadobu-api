@@ -66,10 +66,23 @@ async function findKatalogs(keyWords) {
 }
 
 
+async function findKatalogById(id) {
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM tbl_katalog WHERE kode_produk = '${id}'`, (error, results, data) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
+}
+
+
 module.exports = {
   showKatalogs,
   insertKatalog,
   updateKatalog,
   deleteKatalog,
   findKatalogs,
+  findKatalogById
 };
