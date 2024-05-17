@@ -33,8 +33,8 @@ async function createKatalog(formData) {
 async function editKatalog(formData, id) {
   try {
     const results = await getKatalogById(id);
-    let filePath = "./src/public" + results.foto_produk
-    removeFile(filePath)
+    let filePath = "./src/public" + results.foto_produk;
+    removeFile(filePath);
     if (results) {
       const users = await updateKatalog(formData, id);
       return users;
@@ -46,8 +46,13 @@ async function editKatalog(formData, id) {
 
 async function removeKatalog(id) {
   try {
-    const users = await deleteKatalog(id);
-    return users;
+    const results = await getKatalogById(id);
+    let filePath = "./src/public" + results.foto_produk;
+    removeFile(filePath);
+    if (results) {
+      const users = await deleteKatalog(id);
+      return users;
+    }
   } catch (error) {
     throw error;
   }
