@@ -4,11 +4,9 @@ const {
   updateKatalog,
   deleteKatalog,
   findKatalogs,
-  findKatalogById,
-} = require("./katalog.repository.js");
-const codeGenerator = require("../helper/codegenerator.js");
-const fileUploader = require("../helper/fileAttachment.js");
-const { removeFile } = require("../helper/fileRemover.js");
+  findKatalogByProductCode,
+} = require('./katalog.repository.js');
+const codeGenerator = require('../helper/codegenerator.js');
 
 async function getKatalogs() {
   try {
@@ -67,13 +65,21 @@ async function searchKatalog(keywords) {
   }
 }
 
-async function getKatalogById(id) {
+async function searchKatalog(keywords) {
   try {
-    const results = await findKatalogById(id);
-    if (results.length > 0) {
-      return results[0];
+    const users = await findKatalogs(keywords);
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
+async function searchKatalogByProductCode(kode_produk) {
+  try {
+    const katalog = await findKatalogByProductCode(kode_produk);
+    if (katalog[0]) {
+      return katalog[0];
     }
-    return null;
+    throw new Error('Produk Tidak Ditemukan');
   } catch (error) {
     throw error;
   }
@@ -95,4 +101,5 @@ module.exports = {
   editKatalog,
   removeKatalog,
   searchKatalog,
+  searchKatalogByProductCode,
 };
