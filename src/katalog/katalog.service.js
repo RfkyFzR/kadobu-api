@@ -30,8 +30,13 @@ async function createKatalog(formData) {
 
 async function editKatalog(formData, id) {
   try {
-    const users = await updateKatalog(formData, id);
-    return users;
+    const results = await getKatalogById(id);
+    let filePath = "./src/public" + results.foto_produk;
+    removeFile(filePath);
+    if (results) {
+      const users = await updateKatalog(formData, id);
+      return users;
+    }
   } catch (error) {
     throw error;
   }
@@ -39,7 +44,21 @@ async function editKatalog(formData, id) {
 
 async function removeKatalog(id) {
   try {
-    const users = await deleteKatalog(id);
+    const results = await getKatalogById(id);
+    let filePath = "./src/public" + results.foto_produk;
+    removeFile(filePath);
+    if (results) {
+      const users = await deleteKatalog(id);
+      return users;
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function searchKatalog(keywords) {
+  try {
+    const users = await findKatalogs(keywords);
     return users;
   } catch (error) {
     throw error;
@@ -65,6 +84,16 @@ async function searchKatalogByProductCode(kode_produk) {
     throw error;
   }
 }
+
+//   async function editKatalog(formData, id){
+
+//     try {
+//         const users = await updateKatalog(formData, id);
+//         return users;
+//     } catch (error) {
+//         throw error;
+//     }
+// };
 
 module.exports = {
   getKatalogs,

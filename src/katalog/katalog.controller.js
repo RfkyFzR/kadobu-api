@@ -7,8 +7,8 @@ const {
   removeKatalog,
   editKatalog,
   searchKatalog,
-  searchKatalogByProductCode,
-} = require('./katalog.service.js');
+} = require("./katalog.service.js");
+const upload = require('../helper/fileAttachment.js');
 
 router.get('/', async (req, res) => {
   const errors = validationResult(req);
@@ -36,15 +36,15 @@ router.get('/', async (req, res) => {
 });
 
 router.post(
-  '/',
+  "/",
+  upload.single("fotoProduk"),
   [
-    body('namaProduk').notEmpty(),
-    body('deskripsiProduk').notEmpty(),
-    body('stokProduk').notEmpty(),
-    body('hargaProduk').notEmpty(),
-    body('fotoProduk').notEmpty(),
-    body('status').notEmpty(),
-    body('idToko').notEmpty(),
+    body("namaProduk").notEmpty(),
+    body("deskripsiProduk").notEmpty(),
+    body("stokProduk").notEmpty(),
+    body("hargaProduk").notEmpty(),
+    body("status").notEmpty(),
+    body("idToko").notEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -59,8 +59,8 @@ router.post(
       deskripsi_produk: req.body.deskripsiProduk,
       stok_produk: req.body.stokProduk,
       harga_produk: req.body.hargaProduk,
-      foto: req.body.fotoProduk,
-      status: req.body.status,
+      foto_produk: "/images/" + req.file.filename,
+      status_produk: req.body.status,
       id_toko: req.body.idToko,
     };
     await createKatalog(formData);
@@ -73,15 +73,14 @@ router.post(
 );
 
 router.patch(
-  '/:id',
+  "/:id",
+  upload.single("fotoProduk"),
   [
-    body('namaProduk').notEmpty(),
-    body('deskripsiProduk').notEmpty(),
-    body('stokProduk').notEmpty(),
-    body('hargaProduk').notEmpty(),
-    body('fotoProduk').notEmpty(),
-    body('status').notEmpty(),
-    body('idToko').notEmpty(),
+    body("namaProduk").notEmpty(),
+    body("deskripsiProduk").notEmpty(),
+    body("stokProduk").notEmpty(),
+    body("hargaProduk").notEmpty(),
+    body("status").notEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -96,9 +95,8 @@ router.patch(
       deskripsi_produk: req.body.deskripsiProduk,
       stok_produk: req.body.stokProduk,
       harga_produk: req.body.hargaProduk,
-      foto: req.body.fotoProduk,
-      status: req.body.status,
-      id_toko: req.body.idToko,
+      foto_produk: "/images/" + req.file.filename,
+      status_produk: req.body.status,
     };
     try {
       await editKatalog(formData, id);

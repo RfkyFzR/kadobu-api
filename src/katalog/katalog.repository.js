@@ -13,6 +13,7 @@ async function showKatalogs() {
     tbl_toko.nama_toko,
     tbl_toko.id_toko
     FROM tbl_katalog
+
     INNER JOIN tbl_toko ON tbl_katalog.id_toko = tbl_toko.id_toko`,
       (error, results) => {
         if (error) {
