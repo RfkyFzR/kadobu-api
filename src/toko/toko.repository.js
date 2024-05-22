@@ -37,7 +37,19 @@ async function showKatalogsByIdStore(id) {
     })
   }
 
+  async function insertToko(formData) {
+    return new Promise((resolve, reject) => {
+      connection.query('INSERT INTO tbl_toko SET ?', formData, (error, results) => {
+        if (error) {
+          return reject(error)
+        }
+        return resolve(results)
+      });
+    })
+  }
+
   module.exports = {
     showKatalogsByIdStore,
     showStoreById,
+    insertToko,
   }

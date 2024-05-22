@@ -1,24 +1,24 @@
 const {
-  showPenggunas,
-  insertPengguna,
-  findPenggunasByEmail,
+  showPembeli,
+  insertPembeli,
+  findPembeliByEmail,
   updateToken,
-} = require("./pengguna.repository.js");
+} = require("./pembeli.repository.js");
 const { hashPassword, comparePassword,} = require("../helper/hash.js");
 const { generateToken } = require("../helper/tokengenerator.js")
 
-async function getPengguna() {
+async function getPembeli() {
   try {
-    const users = await showPenggunas();
+    const users = await showPembeli();
     return users;
   } catch (error) {
     throw error;
   }
 }
 
-async function getPenggunaByEmail(email) {
+async function getPembeliByEmail(email) {
   try {
-    const results = await findPenggunasByEmail(email);
+    const results = await findPembeliByEmail(email);
     if (results.length > 0) {
       return results[0];
     }
@@ -28,20 +28,20 @@ async function getPenggunaByEmail(email) {
   }
 }
 
-async function createPengguna(formData) {
+async function createPembeli(formData) {
   try {
     const encryptPassword = hashPassword(formData.password);
     formData.password = encryptPassword;
-    const users = await insertPengguna(formData);
+    const users = await insertPembeli(formData);
     return users;
   } catch (error) {
     throw error;
   }
 }
 
-async function authentikasiPengguna(formData) {
+async function authentikasiPembeli(formData) {
   try {
-    const users = await getPenggunaByEmail(formData.email);
+    const users = await getPembeliByEmail(formData.email);
     if (users) {
       const isPasswordValid = comparePassword(
         formData.password,
@@ -75,8 +75,8 @@ async function saveToken(id) {
 }
 
 module.exports = {
-  getPengguna,
-  createPengguna,
-  authentikasiPengguna,
+  getPembeli,
+  createPembeli,
+  authentikasiPembeli,
   saveToken,
 };

@@ -43,7 +43,7 @@ router.post(
       deskripsi_produk: req.body.deskripsiProduk,
       stok_produk: req.body.stokProduk,
       harga_produk: req.body.hargaProduk,
-      foto_produk: "/images/" + req.file.filename,
+      foto_produk: req.file.filename,
       status_produk: req.body.status,
       id_toko: req.body.idToko,
     };
@@ -79,22 +79,28 @@ router.patch(
       deskripsi_produk: req.body.deskripsiProduk,
       stok_produk: req.body.stokProduk,
       harga_produk: req.body.hargaProduk,
-      foto_produk: "/images/" + req.file.filename,
+      foto_produk: req.file.filename,
       status_produk: req.body.status,
     };
-    try {
-      await editKatalog(formData, id);
+    await editKatalog(formData, id);
       return res.status(200).json({
         status: true,
         message: "Katalog berhasil dirubah!",
         data: formData,
       });
-    } catch (error) {
-      return res.status(500).json({
-        status: false,
-        message: "Internal server error",
-      });
-    }
+    // try {
+    //   await editKatalog(formData, id);
+    //   return res.status(200).json({
+    //     status: true,
+    //     message: "Katalog berhasil dirubah!",
+    //     data: formData,
+    //   });
+    // } catch (error) {
+    //   return res.status(500).json({
+    //     status: false,
+    //     message: "Internal server error",
+    //   });
+    // }
   }
 );
 

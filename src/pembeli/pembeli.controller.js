@@ -2,14 +2,15 @@ const express = require("express");
 const router = express.Router();
 const { body, validationResult } = require("express-validator");
 const {
-  getPengguna,
-  createPengguna,
-  authentikasiPengguna,
+  getPembeli,
+  createPembeli,
+  authentikasiPembeli,
   saveToken,
-} = require("./pengguna.service.js");
+} = require("./pembeli.service.js");
+const upload = require('../helper/fileAttachment.js');
 
 router.get("/", async (req, res) => {
-  const responsePengguna = await getPengguna();
+  const responsePengguna = await getPembeli();
   return res.status(200).json({
     status: true,
     message: "List Data Pengguna",
@@ -37,10 +38,10 @@ router.post(
       email: req.body.email,
     };
     try {
-      await createPengguna(formData);
+      await createPembeli(formData);
       return res.status(200).json({
         status: true,
-        message: "Pengguna berhasil didaftarkan!",
+        message: "Pembeli berhasil didaftarkan!",
         data: formData,
       });
     } catch (error) {
@@ -54,6 +55,7 @@ router.post(
 
 router.post(
   "/login",
+  upload.any(),
   [body("password").notEmpty(), body("email").notEmpty()],
   async (req, res) => {
     const errors = validationResult(req);
@@ -67,7 +69,7 @@ router.post(
       email: req.body.email,
     };
     try {
-      const data = await authentikasiPengguna(formData);
+      const data = await authentikasiPembeli(formData);
       if (data.isSuccess) {
         const token = await saveToken(data.data.id);
         res.cookie("token", token, {

@@ -7,7 +7,6 @@ const {
   findKatalogById,
 } = require("./katalog.repository.js");
 const codeGenerator = require("../helper/codegenerator.js");
-const fileUploader = require("../helper/fileAttachment.js");
 const { removeFile } = require("../helper/fileRemover.js");
 
 async function getKatalogs() {
@@ -33,7 +32,7 @@ async function createKatalog(formData) {
 async function editKatalog(formData, id) {
   try {
     const results = await getKatalogById(id);
-    let filePath = "./src/public" + results.foto_produk;
+    let filePath = "./public/product_images/" + results.foto_produk;
     removeFile(filePath);
     if (results) {
       const users = await updateKatalog(formData, id);
@@ -47,7 +46,7 @@ async function editKatalog(formData, id) {
 async function removeKatalog(id) {
   try {
     const results = await getKatalogById(id);
-    let filePath = "./src/public" + results.foto_produk;
+    let filePath = "./public/product_images/" + results.foto_produk;
     removeFile(filePath);
     if (results) {
       const users = await deleteKatalog(id);
@@ -78,16 +77,6 @@ async function getKatalogById(id) {
     throw error;
   }
 }
-
-//   async function editKatalog(formData, id){
-
-//     try {
-//         const users = await updateKatalog(formData, id);
-//         return users;
-//     } catch (error) {
-//         throw error;
-//     }
-// };
 
 module.exports = {
   getKatalogs,
