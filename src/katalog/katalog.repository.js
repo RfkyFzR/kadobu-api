@@ -1,6 +1,6 @@
 const connection = require("../config/database.js");
 
-async function showKatalogs() {
+async function showKatalogs(nama_produk) {
   return new Promise((resolve, reject) => {
     connection.query(`SELECT tbl_katalog.kode_produk,
     tbl_katalog.nama_produk,
@@ -9,10 +9,13 @@ async function showKatalogs() {
     tbl_katalog.harga_produk,
     tbl_katalog.status_produk,
     tbl_katalog.foto_produk,
+    tbl_katalog.created_at,
     tbl_toko.nama_toko,
     tbl_toko.id_toko
     FROM tbl_katalog
-    INNER JOIN tbl_toko ON tbl_katalog.id_toko = tbl_toko.id_toko`, (error, results) => {
+    INNER JOIN tbl_toko ON tbl_katalog.id_toko = tbl_toko.id_toko
+    WHERE tbl_katalog.deleted_at IS NULL
+    AND tbl_katalog.nama_produk LIKE '%%${nama_produk}%%'`, (error, results) => {
       if (error) {
         return reject(error)
       }
@@ -43,9 +46,9 @@ async function updateKatalog(formData, id) {
   })
 }
 
-async function deleteKatalog(id) {
+async function deleteKatalog(deleted_date, kode_produk) {
   return new Promise((resolve, reject) => {
-    connection.query(`DELETE FROM tbl_katalog WHERE kode_produk = '${id}'`, (error, results) => {
+    connection.query(`UPDATE tbl_katalog SET deleted_at = '${deleted_date}' WHERE kode_produk = '${kode_produk}'`, (error, results) => {
       if (error) {
         return reject(error)
       }
@@ -54,9 +57,9 @@ async function deleteKatalog(id) {
   })
 }
 
-async function findKatalogs(keyWords) {
+async function findKatalogByProductCode(kode_produk) {
   return new Promise((resolve, reject) => {
-    connection.query(`SELECT * FROM tbl_katalog WHERE nama_produk LIKE '%%${keyWords}%%'`, (error, results, data) => {
+    connection.query(`SELECT * FROM tbl_katalog WHERE kode_produk = '${kode_produk}' AND deleted_at IS NULL`, (error, results, data) => {
       if (error) {
         return reject(error)
       }
@@ -65,10 +68,9 @@ async function findKatalogs(keyWords) {
   })
 }
 
-
-async function findKatalogById(id) {
+async function updateStockProduk(stok_produk, kode_produk) {
   return new Promise((resolve, reject) => {
-    connection.query(`SELECT * FROM tbl_katalog WHERE kode_produk = '${id}'`, (error, results, data) => {
+    connection.query(`UPDATE tbl_katalog SET stok_produk = '${stok_produk}' WHERE kode_produk = '${kode_produk}'`, (error, results) => {
       if (error) {
         return reject(error)
       }
@@ -76,13 +78,12 @@ async function findKatalogById(id) {
     });
   })
 }
-
 
 module.exports = {
   showKatalogs,
   insertKatalog,
   updateKatalog,
   deleteKatalog,
-  findKatalogs,
-  findKatalogById
+  findKatalogByProductCode,
+  updateStockProduk,
 };

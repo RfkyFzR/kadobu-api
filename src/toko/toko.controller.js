@@ -1,11 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { body, validationResult } = require("express-validator");
-const { getKatalogsAndStoreById,
-  createToko,
- } = require("./toko.service.js");
+const { getKatalogsAndStoreById, createToko, editToko } = require("./toko.service.js");
 const upload = require("../helper/fileAttachment.js");
-
 
 router.get("/:id", async (req, res) => {
   const errors = validationResult(req);
@@ -25,42 +22,80 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post(
-  "/:idPenjual",
-  upload.fields([
-    {
-      name: 'fotoProfil',
-      maxCount: 1,
-    },
-    {
-      name: 'fotoBanner',
-      maxCount: 1,
-    },
-  ]),
+  "/",
+  upload.single("fotoProfil"),
   [
     body("namaToko").notEmpty(),
     body("deskripsiToko").notEmpty(),
     body("alamatToko").notEmpty(),
+    body("idPenjual").notEmpty(),
   ],
   async (req, res) => {
+    if (req.fileValidationError) {
+      return res.status(400).json({
+        status: false,
+        message: req.fileValidationError,
+      });
+    }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({
         errors: errors.array(),
       });
     }
-    let idPenjual = req.params.idPenjual
+    let id_penjual = req.body.idPenjual;
     let formData = {
       nama_toko: req.body.namaToko,
       deskripsi_toko: req.body.deskripsiToko,
       alamat_toko: req.body.alamatToko,
-      foto_profil: req.files['fotoProfil'][0].filename,
-      foto_banner: req.files['fotoBanner'][0].filename,
-      id_penjual: idPenjual,
+      foto_profil: req.file.filename,
     };
-    await createToko(formData);
+    await createToko(formData, id_penjual);
     return res.status(200).json({
       status: true,
       message: "Toko berhasil dibuat!",
+      data: formData,
+    });
+  }
+);
+
+router.patch(
+  "/:idToko",
+  upload.single("fotoProfil"),
+  [
+    body("namaToko").notEmpty(),
+    body("deskripsiToko").notEmpty(),
+    body("alamatToko").notEmpty(),
+  ],
+  async (req, res) => {
+    if (req.fileValidationError) {
+      return res.status(400).json({
+        status: false,
+        message: req.fileValidationError,
+      });
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({
+        errors: errors.array(),
+      });
+    }
+    let id_toko = req.params.idToko
+    let formData = {
+      nama_toko: req.body.namaToko,
+      deskripsi_toko: req.body.deskripsiToko,
+      alamat_toko: req.body.alamatToko,
+    };
+    if (req.file) {
+      formData = {
+        ...formData,
+        foto_profil: req.file.filename,
+      };
+    }
+    await editToko(formData, id_toko);
+    return res.status(200).json({
+      status: true,
+      message: "Toko berhasil dirubah!",
       data: formData,
     });
   }

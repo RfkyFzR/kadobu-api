@@ -1,8 +1,7 @@
-const { showPenjual,
+const { 
+  showPenjual,
   insertPenjual,
  } = require("./penjual.repository.js");
-
- const { hashPassword, comparePassword,} = require("../helper/hash.js");
 
 async function getPenjual() {
   try {
@@ -13,10 +12,8 @@ async function getPenjual() {
   }
 }
 
-async function createPenjual(formData) {
+async function addPenjual(formData) {
   try {
-    const encryptPassword = hashPassword(formData.password);
-    formData.password = encryptPassword;
     const users = await insertPenjual(formData);
     return users;
   } catch (error) {
@@ -26,5 +23,5 @@ async function createPenjual(formData) {
 
 module.exports = {
     getPenjual,
-    createPenjual,
+    addPenjual,
 }

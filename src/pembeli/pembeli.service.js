@@ -28,37 +28,10 @@ async function getPembeliByEmail(email) {
   }
 }
 
-async function createPembeli(formData) {
+async function addPembeli(formData) {
   try {
-    const encryptPassword = hashPassword(formData.password);
-    formData.password = encryptPassword;
     const users = await insertPembeli(formData);
     return users;
-  } catch (error) {
-    throw error;
-  }
-}
-
-async function authentikasiPembeli(formData) {
-  try {
-    const users = await getPembeliByEmail(formData.email);
-    if (users) {
-      const isPasswordValid = comparePassword(
-        formData.password,
-        users.password
-      );
-      return isPasswordValid
-        ? {
-            isSuccess: true,
-            data: users,
-          }
-        : {
-            isSuccess: false,
-          };
-    }
-    return {
-      isSuccess: false,
-    };
   } catch (error) {
     throw error;
   }
@@ -76,7 +49,6 @@ async function saveToken(id) {
 
 module.exports = {
   getPembeli,
-  createPembeli,
-  authentikasiPembeli,
+  addPembeli,
   saveToken,
 };
