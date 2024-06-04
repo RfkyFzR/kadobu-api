@@ -1,8 +1,8 @@
 const connection = require("../config/database.js");
 
-async function showPenggunas() {
+async function showPembeli() {
   return new Promise((resolve, reject) => {
-    connection.query("SELECT * FROM tbl_pengguna ORDER BY id desc", (error, results) => {
+    connection.query("SELECT * FROM tbl_pembeli ORDER BY id desc", (error, results) => {
       if (error) {
         return reject(error)
       }
@@ -11,9 +11,9 @@ async function showPenggunas() {
   })
 }
 
-async function findPenggunasByEmail(email) {
+async function insertPembeli(formData) {
   return new Promise((resolve, reject) => {
-    connection.query(`SELECT * FROM tbl_pengguna WHERE email = '${email}'`, (error, results) => {
+    connection.query('INSERT INTO tbl_pembeli SET ?', formData, (error, results) => {
       if (error) {
         return reject(error)
       }
@@ -22,9 +22,9 @@ async function findPenggunasByEmail(email) {
   })
 }
 
-async function insertPengguna(formData) {
+async function findPembeliByEmail(email) {
   return new Promise((resolve, reject) => {
-    connection.query('INSERT INTO tbl_pengguna SET ?', formData, (error, results) => {
+    connection.query(`SELECT * FROM tbl_pembeli WHERE email = '${email}'`, (error, results) => {
       if (error) {
         return reject(error)
       }
@@ -32,10 +32,11 @@ async function insertPengguna(formData) {
     });
   })
 }
+
 
 async function updateToken(token, id){
   return new Promise((resolve, reject) => {
-    connection.query(`UPDATE tbl_pengguna SET token = '${token}' WHERE ID = '${id}'`, (error, results) => {
+    connection.query(`UPDATE tbl_pembeli SET token = '${token}' WHERE ID = '${id}'`, (error, results) => {
       if (error){
         return reject(error)
       }
@@ -45,8 +46,8 @@ async function updateToken(token, id){
 }
 
 module.exports = {
-  showPenggunas,
-  insertPengguna,
-  findPenggunasByEmail,
+  showPembeli,
+  insertPembeli,
+  findPembeliByEmail,
   updateToken,
 };

@@ -4,7 +4,8 @@ const route = express.Router();
 const removeFile = require("../helper/fileRemover.js")
 
 route.use("/index", (req, res) => {
-    removeFile("./src/public/images/1715939943322catto.jpg");
+    const dateTime = new Date();
+    console.log(dateTime.toISOString().slice(0,10));
     
 })
 

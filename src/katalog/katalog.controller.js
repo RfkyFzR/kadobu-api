@@ -6,33 +6,31 @@ const {
   createKatalog,
   removeKatalog,
   editKatalog,
-  searchKatalog,
 } = require("./katalog.service.js");
-const upload = require('../helper/fileAttachment.js');
+const upload = require("../helper/fileAttachment.js");
 
-router.get('/', async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(422).json({
-      errors: errors.array(),
-    });
-  }
-  let find = req.query.cari;
-  if (!find) {
-    const responseKatalog = await getKatalogs();
+router.get("/", async (req, res) => {
+  try {
+    const find = req.query.cari || "";
+    const responseKatalog = await getKatalogs(find);
+    if (responseKatalog.length !== 0) {
+      return res.status(200).json({
+        status: true,
+        message: "List Data Katalog",
+        data: responseKatalog,
+      });
+    }
     return res.status(200).json({
       status: true,
-      message: 'List Data Katalog',
-      data: responseKatalog,
+      message: "Success: Katalog tidak ditemukan!",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: `Error: Get Katalogs Fail, ${error.message}`,
     });
   }
 
-  const result = await searchKatalog(find);
-  return res.status(200).json({
-    status: true,
-    message: 'Katalog berhasil ditemukan!',
-    data: result,
-  });
 });
 
 router.post(
@@ -47,29 +45,51 @@ router.post(
     body("idToko").notEmpty(),
   ],
   async (req, res) => {
+    if (req.fileValidationError) {
+      return res.status(400).json({
+        status: false,
+        message: req.fileValidationError,
+      });
+    }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({
-        errors: errors.array(),
+        status: false,
+        message: "Data tidak boleh kosong",
+        // errors: errors.array(),
       });
     }
-    let formData = {
-      kode_produk: req.body.kodeProduk,
-      nama_produk: req.body.namaProduk,
-      deskripsi_produk: req.body.deskripsiProduk,
-      stok_produk: req.body.stokProduk,
-      harga_produk: req.body.hargaProduk,
-      foto_produk: "/images/" + req.file.filename,
-      status_produk: req.body.status,
-      id_toko: req.body.idToko,
-    };
-    await createKatalog(formData);
-    return res.status(200).json({
-      status: true,
-      message: 'Katalog berhasil ditambahkan!',
-      data: formData,
-    });
-  },
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          status: false,
+          message: "Foto tidak boleh kosong!",
+        });
+      }
+      let formData = {
+        kode_produk: req.body.kodeProduk,
+        nama_produk: req.body.namaProduk,
+        deskripsi_produk: req.body.deskripsiProduk,
+        stok_produk: req.body.stokProduk,
+        harga_produk: req.body.hargaProduk,
+        foto_produk: req.file.filename,
+        status_produk: req.body.status,
+        id_toko: req.body.idToko,
+      };
+      await createKatalog(formData);
+      return res.status(200).json({
+        status: true,
+        message: "Katalog berhasil ditambahkan!",
+        data: formData,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: `Error: Post Katalogs Fail, ${error.message}`,
+        error,
+      });
+    }
+  }
 );
 
 router.patch(
@@ -83,22 +103,33 @@ router.patch(
     body("status").notEmpty(),
   ],
   async (req, res) => {
+    if (req.fileValidationError) {
+      return res.status(400).json({
+        status: false,
+        message: req.fileValidationError,
+      });
+    }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({
         errors: errors.array(),
       });
     }
-    let id = req.params.id;
     let formData = {
       nama_produk: req.body.namaProduk,
       deskripsi_produk: req.body.deskripsiProduk,
       stok_produk: req.body.stokProduk,
       harga_produk: req.body.hargaProduk,
-      foto_produk: "/images/" + req.file.filename,
       status_produk: req.body.status,
     };
+    const id = req.params.id;
     try {
+      if (req.file) {
+        formData = {
+          ...formData,
+          foto_produk: req.file.filename,
+        };
+      }
       await editKatalog(formData, id);
       return res.status(200).json({
         status: true,
@@ -108,44 +139,37 @@ router.patch(
     } catch (error) {
       return res.status(500).json({
         status: false,
-        message: 'Internal server error',
+
+        message: `Error: Patch Katalogs Fail, ${error.message}`,
+        error,
+
       });
     }
   },
 );
 
-router.delete('/(:id)', async (req, res) => {
-  let id = req.params.id;
-  await removeKatalog(id);
-  const showKatalogs = await getKatalogs();
-  return res.status(200).json({
-    status: true,
-    message: 'Katalog berhasil dihapus!',
-    data: showKatalogs,
-  });
-});
-
-router.get('/:kode_produk', async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(422).json({
-      errors: errors.array(),
-    });
-  }
+router.delete("/(:kode_produk)", async (req, res) => {
   let kode_produk = req.params.kode_produk;
   try {
-    const result = await searchKatalogByProductCode(kode_produk);
-    return res.status(200).json({
-      status: true,
-      message: 'Katalog berhasil ditemukan!',
-      result,
+    const isSuccess = await removeKatalog(kode_produk);
+    if (isSuccess) {
+      return res.status(200).json({
+        status: true,
+        message: "Katalog berhasil dihapus!",
+      });
+    }
+    return res.status(400).json({
+      status: false,
+      message: "Katalog tidak ditemukan!",
     });
   } catch (error) {
-    return res.status(404).json({
+    return res.status(500).json({
       status: false,
-      message: error.message,
+      message: `Error: delete Katalogs Fail, ${error.message}`,
+      error,
     });
   }
+
 });
 
 module.exports = router;

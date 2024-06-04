@@ -3,14 +3,15 @@ const {
   insertKatalog,
   updateKatalog,
   deleteKatalog,
-  findKatalogs,
   findKatalogByProductCode,
-} = require('./katalog.repository.js');
-const codeGenerator = require('../helper/codegenerator.js');
+} = require("./katalog.repository.js");
+const codeGenerator = require("../helper/codegenerator.js");
+const { removeFile } = require("../helper/fileRemover.js");
+const { datePicker } = require("../helper/datePicker.js");
 
-async function getKatalogs() {
+async function getKatalogs(nama_produk) {
   try {
-    const users = await showKatalogs();
+    const users = await showKatalogs(nama_produk);
     return users;
   } catch (error) {
     throw error;
@@ -30,9 +31,11 @@ async function createKatalog(formData) {
 
 async function editKatalog(formData, id) {
   try {
-    const results = await getKatalogById(id);
-    let filePath = "./src/public" + results.foto_produk;
-    removeFile(filePath);
+    const results = await getKatalogByProductCode(id);
+    if (formData.foto_produk){
+      let filePath = "./public/product_images/" + results.foto_produk;
+      removeFile(filePath);
+    }
     if (results) {
       const users = await updateKatalog(formData, id);
       return users;
@@ -42,42 +45,29 @@ async function editKatalog(formData, id) {
   }
 }
 
-async function removeKatalog(id) {
+async function removeKatalog(kode_produk) {
   try {
-    const results = await getKatalogById(id);
-    let filePath = "./src/public" + results.foto_produk;
-    removeFile(filePath);
-    if (results) {
-      const users = await deleteKatalog(id);
-      return users;
+    const results = await getKatalogByProductCode(kode_produk);
+    if (results){
+      const deleted_date = datePicker();
+      const users = await deleteKatalog(deleted_date, kode_produk);
+      return true;
     }
+    return false;
+    // let filePath = "./public/product_images/" + results.foto_produk;
+    // removeFile(filePath);
+      
   } catch (error) {
     throw error;
   }
 }
 
-async function searchKatalog(keywords) {
+async function getKatalogByProductCode(kode_produk) {
   try {
-    const users = await findKatalogs(keywords);
-    return users;
-  } catch (error) {
-    throw error;
-  }
-}
+    const results = await findKatalogByProductCode(kode_produk);
+    if (results.length > 0) {
+      return results[0];
 
-async function searchKatalog(keywords) {
-  try {
-    const users = await findKatalogs(keywords);
-    return users;
-  } catch (error) {
-    throw error;
-  }
-}
-async function searchKatalogByProductCode(kode_produk) {
-  try {
-    const katalog = await findKatalogByProductCode(kode_produk);
-    if (katalog[0]) {
-      return katalog[0];
     }
     throw new Error('Produk Tidak Ditemukan');
   } catch (error) {
@@ -85,21 +75,10 @@ async function searchKatalogByProductCode(kode_produk) {
   }
 }
 
-//   async function editKatalog(formData, id){
-
-//     try {
-//         const users = await updateKatalog(formData, id);
-//         return users;
-//     } catch (error) {
-//         throw error;
-//     }
-// };
-
 module.exports = {
   getKatalogs,
   createKatalog,
   editKatalog,
   removeKatalog,
-  searchKatalog,
-  searchKatalogByProductCode,
+
 };
