@@ -1,0 +1,4 @@
+const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
+const MIDTRANS_APP_URL = process.env.MIDTRANS_APP_URL;
+
+module.exports = { MIDTRANS_SERVER_KEY, MIDTRANS_APP_URL };

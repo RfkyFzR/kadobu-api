@@ -9,7 +9,7 @@ const connection = require('./config/database');
 dotenv.config();
 const app = express();
 app.use(cors());
-const port = 3002;
+const port = process.env.PORT;
 // const route = require('./routes/index.js');
 const bodyParser = require('body-parser');
 const pembeliController = require('./pembeli/pembeli.controller.js');
