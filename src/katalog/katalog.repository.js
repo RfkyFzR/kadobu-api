@@ -1,8 +1,9 @@
-const connection = require("../config/database.js");
+const connection = require('../config/database.js');
 
 async function showKatalogs(nama_produk) {
   return new Promise((resolve, reject) => {
-    connection.query(`SELECT tbl_katalog.kode_produk,
+    connection.query(
+      `SELECT tbl_katalog.kode_produk,
     tbl_katalog.nama_produk,
     tbl_katalog.deskripsi_produk,
     tbl_katalog.stok_produk,
@@ -22,28 +23,37 @@ async function showKatalogs(nama_produk) {
       return resolve(results)
     });
   })
+
 }
 
 async function insertKatalog(formData) {
   return new Promise((resolve, reject) => {
-    connection.query('INSERT INTO tbl_katalog SET ?', formData, (error, results) => {
-      if (error) {
-        return reject(error)
-      }
-      return resolve(results)
-    });
-  })
+    connection.query(
+      'INSERT INTO tbl_katalog SET ?',
+      formData,
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      },
+    );
+  });
 }
 
 async function updateKatalog(formData, id) {
   return new Promise((resolve, reject) => {
-    connection.query(`UPDATE tbl_katalog SET ? WHERE kode_produk = '${id}'`, formData, (error, results) => {
-      if (error) {
-        return reject(error)
-      }
-      return resolve(results)
-    });
-  })
+    connection.query(
+      `UPDATE tbl_katalog SET ? WHERE kode_produk = '${id}'`,
+      formData,
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      },
+    );
+  });
 }
 
 async function deleteKatalog(deleted_date, kode_produk) {
@@ -55,6 +65,7 @@ async function deleteKatalog(deleted_date, kode_produk) {
       return resolve(results)
     });
   })
+
 }
 
 async function findKatalogByProductCode(kode_produk) {
@@ -77,6 +88,7 @@ async function updateStockProduk(stok_produk, kode_produk) {
       return resolve(results)
     });
   })
+
 }
 
 module.exports = {
@@ -86,4 +98,5 @@ module.exports = {
   deleteKatalog,
   findKatalogByProductCode,
   updateStockProduk,
+
 };

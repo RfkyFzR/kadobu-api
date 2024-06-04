@@ -1,9 +1,10 @@
 const express = require('express');
+const path = require('path');
 const cookieParser = require('cookie-parser');
 const connection = require('./config/database');
 // const multer = require('multer');
 const app = express();
-const port = 3000;
+const port = 3002;
 // const route = require('./routes/index.js');
 const bodyParser = require('body-parser');
 const pembeliController = require('./pembeli/pembeli.controller.js');
@@ -37,8 +38,7 @@ app.use("/order", orderController);
 
 
 app.listen(port, () => {
-    console.log(`Halaman dimuat pada http://localhost:${port}`)
-})
+  console.log(`Halaman dimuat pada http://localhost:${port}`);
+});
 
 module.exports = connection;
-

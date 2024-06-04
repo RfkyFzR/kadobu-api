@@ -1,6 +1,6 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const { body, validationResult } = require("express-validator");
+const { body, validationResult } = require('express-validator');
 const {
   getKatalogs,
   createKatalog,
@@ -30,6 +30,7 @@ router.get("/", async (req, res) => {
       message: `Error: Get Katalogs Fail, ${error.message}`,
     });
   }
+
 });
 
 router.post(
@@ -132,17 +133,19 @@ router.patch(
       await editKatalog(formData, id);
       return res.status(200).json({
         status: true,
-        message: "Katalog berhasil dirubah!",
+        message: 'Katalog berhasil dirubah!',
         data: formData,
       });
     } catch (error) {
       return res.status(500).json({
         status: false,
+
         message: `Error: Patch Katalogs Fail, ${error.message}`,
         error,
+
       });
     }
-  }
+  },
 );
 
 router.delete("/(:kode_produk)", async (req, res) => {
@@ -166,6 +169,7 @@ router.delete("/(:kode_produk)", async (req, res) => {
       error,
     });
   }
+
 });
 
 module.exports = router;

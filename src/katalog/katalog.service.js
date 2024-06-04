@@ -67,8 +67,9 @@ async function getKatalogByProductCode(kode_produk) {
     const results = await findKatalogByProductCode(kode_produk);
     if (results.length > 0) {
       return results[0];
+
     }
-    return null;
+    throw new Error('Produk Tidak Ditemukan');
   } catch (error) {
     throw error;
   }
@@ -79,4 +80,5 @@ module.exports = {
   createKatalog,
   editKatalog,
   removeKatalog,
+
 };
