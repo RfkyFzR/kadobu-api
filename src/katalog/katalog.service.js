@@ -4,10 +4,10 @@ const {
   updateKatalog,
   deleteKatalog,
   findKatalogByProductCode,
-} = require("./katalog.repository.js");
-const codeGenerator = require("../helper/codegenerator.js");
-const { removeFile } = require("../helper/fileRemover.js");
-const { datePicker } = require("../helper/datePicker.js");
+} = require('./katalog.repository.js');
+const codeGenerator = require('../helper/codegenerator.js');
+const { removeFile } = require('../helper/fileRemover.js');
+const { datePicker } = require('../helper/datePicker.js');
 
 async function getKatalogs(nama_produk) {
   try {
@@ -32,8 +32,8 @@ async function createKatalog(formData) {
 async function editKatalog(formData, id) {
   try {
     const results = await getKatalogByProductCode(id);
-    if (formData.foto_produk){
-      let filePath = "./public/product_images/" + results.foto_produk;
+    if (formData.foto_produk) {
+      let filePath = './public/product_images/' + results.foto_produk;
       removeFile(filePath);
     }
     if (results) {
@@ -48,7 +48,7 @@ async function editKatalog(formData, id) {
 async function removeKatalog(kode_produk) {
   try {
     const results = await getKatalogByProductCode(kode_produk);
-    if (results){
+    if (results) {
       const deleted_date = datePicker();
       const users = await deleteKatalog(deleted_date, kode_produk);
       return true;
@@ -56,7 +56,6 @@ async function removeKatalog(kode_produk) {
     return false;
     // let filePath = "./public/product_images/" + results.foto_produk;
     // removeFile(filePath);
-      
   } catch (error) {
     throw error;
   }
@@ -67,7 +66,6 @@ async function getKatalogByProductCode(kode_produk) {
     const results = await findKatalogByProductCode(kode_produk);
     if (results.length > 0) {
       return results[0];
-
     }
     throw new Error('Produk Tidak Ditemukan');
   } catch (error) {
@@ -80,5 +78,5 @@ module.exports = {
   createKatalog,
   editKatalog,
   removeKatalog,
-
+  getKatalogByProductCode,
 };

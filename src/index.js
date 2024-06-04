@@ -1,9 +1,14 @@
 const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const connection = require('./config/database');
 // const multer = require('multer');
+
+dotenv.config();
 const app = express();
+app.use(cors());
 const port = 3002;
 // const route = require('./routes/index.js');
 const bodyParser = require('body-parser');
@@ -19,23 +24,22 @@ const orderController = require('./order/order.controller.js');
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 // app.use(multer().array())
 // app.use(route);
 app.use(express.json());
 
-app.use("/signup-pembeli", signUpPembeliController);
-app.use("/signup-penjual", signUpPenjualController);
-app.use("/signin-pembeli", signInPembeliController);
-app.use("/penjual", penjualController);
-app.use("/pembeli", pembeliController);
-app.use("/katalogs", katalogController);
-app.use("/toko", tokoController);
-app.use("/invite-staff", inviteStaffController);
-app.use("/order", orderController);
-
+app.use('/signup-pembeli', signUpPembeliController);
+app.use('/signup-penjual', signUpPenjualController);
+app.use('/signin-pembeli', signInPembeliController);
+app.use('/penjual', penjualController);
+app.use('/pembeli', pembeliController);
+app.use('/katalogs', katalogController);
+app.use('/toko', tokoController);
+app.use('/invite-staff', inviteStaffController);
+app.use('/order', orderController);
 
 app.listen(port, () => {
   console.log(`Halaman dimuat pada http://localhost:${port}`);

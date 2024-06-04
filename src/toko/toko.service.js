@@ -3,13 +3,11 @@ const {
   showStoreById,
   insertToko,
   updateToko,
-  findTokoById
-} = require("../toko/toko.repository.js");
+  findTokoById,
+} = require('../toko/toko.repository.js');
 
-const {
-  updateFkPenjual
-} = require("../penjual/penjual.repository.js")
-const { removeFile } = require("../helper/fileRemover.js");
+const { updateFkPenjual } = require('../penjual/penjual.repository.js');
+const { removeFile } = require('../helper/fileRemover.js');
 
 async function getKatalogsAndStoreById(id) {
   try {
@@ -27,7 +25,7 @@ async function getKatalogsAndStoreById(id) {
 async function createToko(formData, id_penjual) {
   try {
     const toko = await insertToko(formData);
-    await updateFkPenjual(toko.insertId, id_penjual)
+    await updateFkPenjual(formData.id_toko, id_penjual);
     return toko;
   } catch (error) {
     throw error;
@@ -49,8 +47,8 @@ async function getTokoById(id_toko) {
 async function editToko(formData, id_toko) {
   try {
     const results = await getTokoById(id_toko);
-    if (formData.foto_profil){
-      let filePath = "./public/store_images/" + results.foto_profil;
+    if (formData.foto_profil) {
+      let filePath = './public/store_images/' + results.foto_profil;
       removeFile(filePath);
     }
     if (results) {
