@@ -6,8 +6,9 @@ const {
   addPenjual,
 } = require("./penjual.service.js");
 const upload = require("../helper/fileAttachment.js");
+const apiKeyMiddleware = require('../helper/apiAuth.js');
 
-router.get("/", async (req, res) => {
+router.get("/", apiKeyMiddleware, async (req, res) => {
   const responsePenjual = await getPenjual();
   return res.status(200).json({
     status: true,
@@ -18,6 +19,7 @@ router.get("/", async (req, res) => {
 
 router.post(
   "/",
+  apiKeyMiddleware,
   upload.any(),
   [
     body("idPenjual").notEmpty(), 

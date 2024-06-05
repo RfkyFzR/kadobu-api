@@ -3,8 +3,9 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const upload = require('../helper/fileAttachment.js');
 const { getOrders, createOrder, editOrderStatus } = require('./order.service.js');
+const apiKeyMiddleware = require('../helper/apiAuth.js');
 
-router.get('/', async (req, res) => {
+router.get('/', apiKeyMiddleware, async (req, res) => {
   try {
     const find = req.query.cari || '';
     const responseOrder = await getOrders(find);
@@ -29,6 +30,7 @@ router.get('/', async (req, res) => {
 
 router.patch(
   '/:idOrder',
+  apiKeyMiddleware,
   upload.none(),
   [
     body('status').notEmpty(),
@@ -62,6 +64,7 @@ router.patch(
 
 router.post(
   '/',
+  apiKeyMiddleware,
   upload.none(),
   [
     body('idPembeli').notEmpty(),

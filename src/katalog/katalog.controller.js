@@ -59,6 +59,7 @@ router.get('/', apiKeyMiddleware, async (req, res) => {
 
 router.post(
   '/',
+  apiKeyMiddleware,
   upload.single('fotoProduk'),
   [
     body('namaProduk').notEmpty(),
@@ -118,6 +119,7 @@ router.post(
 
 router.patch(
   '/:id',
+  apiKeyMiddleware,
   upload.single('fotoProduk'),
   [
     body('namaProduk').notEmpty(),
@@ -171,7 +173,7 @@ router.patch(
   },
 );
 
-router.delete('/(:kode_produk)', async (req, res) => {
+router.delete('/(:kode_produk)', apiKeyMiddleware, async (req, res) => {
   let kode_produk = req.params.kode_produk;
   try {
     const isSuccess = await removeKatalog(kode_produk);

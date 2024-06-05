@@ -4,11 +4,12 @@ const { body, validationResult } = require("express-validator");
 const {
     updateRole,
 } = require ('./invite-staff.service.js');
-
 const upload = require("../helper/fileAttachment.js");
+const apiKeyMiddleware = require('../helper/apiAuth.js');
 
 router.post(
   "/",
+  apiKeyMiddleware,
   upload.any(),
   [
     body("idToko").notEmpty(),

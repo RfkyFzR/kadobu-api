@@ -7,8 +7,9 @@ const {
   editToko,
 } = require('./toko.service.js');
 const upload = require('../helper/fileAttachment.js');
+const apiKeyMiddleware = require('../helper/apiAuth.js');
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', apiKeyMiddleware, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(422).json({
@@ -27,6 +28,7 @@ router.get('/:id', async (req, res) => {
 
 router.post(
   '/',
+  apiKeyMiddleware,
   upload.single('fotoProfil'),
   [
     body('idToko').notEmpty(),
@@ -67,6 +69,7 @@ router.post(
 
 router.patch(
   '/:idToko',
+  apiKeyMiddleware,
   upload.single('fotoProfil'),
   [
     body('namaToko').notEmpty(),
