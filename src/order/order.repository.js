@@ -43,7 +43,19 @@ async function insertOrder(formData) {
   });
 }
 
+async function updateOrderStatus(id_order, status) {
+  return new Promise((resolve, reject) => {
+    connection.query(`UPDATE tbl_order SET status = '${status}' WHERE id_order = '${id_order}'`, (error, results) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
+}
+
 module.exports = {
   showOrders,
   insertOrder,
+  updateOrderStatus
 };

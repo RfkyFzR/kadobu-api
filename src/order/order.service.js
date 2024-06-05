@@ -1,14 +1,18 @@
-const { showOrders, insertOrder } = require('./order.repository.js');
-const midtransClient = require('midtrans-client');
+const {
+  showOrders,
+  insertOrder,
+  updateOrderStatus,
+} = require("./order.repository.js");
+const midtransClient = require("midtrans-client");
 const {
   findKatalogByProductCode,
   updateStockProduk,
-} = require('../katalog/katalog.repository.js');
-const orderCodeGenerator = require('../helper/OrderCodeGenerator.js');
-const { getPembeliById } = require('../pembeli/pembeli.service');
+} = require("../katalog/katalog.repository.js");
+const orderCodeGenerator = require("../helper/OrderCodeGenerator.js");
+const { getPembeliById } = require("../pembeli/pembeli.service");
 
-const { MIDTRANS_APP_URL, MIDTRANS_SERVER_KEY } = require('../config/midtrans');
-const { FRONT_END_URL } = require('../config/frontend');
+const { MIDTRANS_APP_URL, MIDTRANS_SERVER_KEY } = require("../config/midtrans");
+const { FRONT_END_URL } = require("../config/frontend");
 
 async function getOrders(kode_pesanan) {
   try {
@@ -35,6 +39,9 @@ async function createOrder(formData) {
   try {
     //mencari katalog dan menghitung total harga
     const product = await getKatalogByProductCode(formData.kode_produk);
+    if (product.stok_produk <= 0) {
+      throw new Error("Stock Kosong!");
+    }
     const pembeli = await getPembeliById(formData.id_pembeli);
     const sum = product.harga_produk * formData.total_pesanan;
     formData.total_harga = sum;
@@ -72,10 +79,10 @@ async function createOrder(formData) {
     };
 
     const midtransResponse = await fetch(`${MIDTRANS_APP_URL}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+        "Content-Type": "application/json",
+        Accept: "application/json",
         Authorization: `Basic ${authString}`,
       },
       body: JSON.stringify(payload),
@@ -85,8 +92,8 @@ async function createOrder(formData) {
     if (midtransResponse.status !== 201) {
       console.log(midtransResponse.status);
       return {
-        status: 'error',
-        message: 'Failed to create transaction',
+        status: "error",
+        message: "Failed to create transaction",
         data: midtransData,
         Authorization: `${MIDTRANS_SERVER_KEY}`,
       };
@@ -96,7 +103,7 @@ async function createOrder(formData) {
 
     return {
       id: order.insertId,
-      status: 'PENDING_PAYMENT',
+      status: "PENDING_PAYMENT",
       customer_name: pembeli.username,
       customer_email: pembeli.email,
       products: product,
@@ -111,7 +118,17 @@ async function createOrder(formData) {
   }
 }
 
+async function editOrderStatus(id_order, status) {
+  try {
+    const order = await updateOrderStatus(id_order, status);
+    return order;
+  } catch (error) {
+    throw error;
+  }
+}
+
 module.exports = {
   createOrder,
   getOrders,
+  editOrderStatus,
 };

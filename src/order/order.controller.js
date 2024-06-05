@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const upload = require('../helper/fileAttachment.js');
-const { getOrders, createOrder } = require('./order.service.js');
+const { getOrders, createOrder, editOrderStatus } = require('./order.service.js');
 
 router.get('/', async (req, res) => {
   try {
@@ -26,6 +26,39 @@ router.get('/', async (req, res) => {
     });
   }
 });
+
+router.patch(
+  '/:idOrder',
+  upload.none(),
+  [
+    body('status').notEmpty(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({
+        status: false,
+        message: 'Data tidak boleh kosong',
+        errors: errors.array(),
+      });
+    }
+    try {
+      let id_order = req.params.idOrder;
+      let status = req.body.status;
+      await editOrderStatus(id_order, status);
+      return res.status(200).json({
+        status: true,
+        message: 'Success: Update Status Order!',
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: `Error: Patch Orders Fail, ${error.message}`,
+        error,
+      });
+    }
+  },
+);
 
 router.post(
   '/',
