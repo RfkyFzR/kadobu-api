@@ -9,8 +9,9 @@ const {
   getKatalogByProductCode,
 } = require('./katalog.service.js');
 const upload = require('../helper/fileAttachment.js');
+const apiKeyMiddleware = require('../helper/apiAuth.js');
 
-router.get('/:kode_produk', async (req, res) => {
+router.get('/:kode_produk', apiKeyMiddleware, async (req, res) => {
   try {
     const kode_produk = req.params.kode_produk;
     const responseKatalog = await getKatalogByProductCode(kode_produk);
@@ -32,7 +33,8 @@ router.get('/:kode_produk', async (req, res) => {
     });
   }
 });
-router.get('/', async (req, res) => {
+
+router.get('/', apiKeyMiddleware, async (req, res) => {
   try {
     const find = req.query.cari || '';
     const responseKatalog = await getKatalogs(find);
@@ -57,6 +59,7 @@ router.get('/', async (req, res) => {
 
 router.post(
   '/',
+  apiKeyMiddleware,
   upload.single('fotoProduk'),
   [
     body('namaProduk').notEmpty(),
@@ -116,6 +119,7 @@ router.post(
 
 router.patch(
   '/:id',
+  apiKeyMiddleware,
   upload.single('fotoProduk'),
   [
     body('namaProduk').notEmpty(),
@@ -169,7 +173,7 @@ router.patch(
   },
 );
 
-router.delete('/(:kode_produk)', async (req, res) => {
+router.delete('/(:kode_produk)', apiKeyMiddleware, async (req, res) => {
   let kode_produk = req.params.kode_produk;
   try {
     const isSuccess = await removeKatalog(kode_produk);

@@ -1,4 +1,13 @@
-const { showOrders, insertOrder } = require('./order.repository.js');
+const crypto = require('crypto');
+
+const {
+  showOrders,
+  showOrdersByUserId,
+  insertOrder,
+  updateOrderStatusAndPayment,
+  showOrdersByUserIdAndStatus,
+  findOrderByOrderCode,
+} = require('./order.repository.js');
 const midtransClient = require('midtrans-client');
 const {
   findKatalogByProductCode,
@@ -13,6 +22,22 @@ const { FRONT_END_URL } = require('../config/frontend');
 async function getOrders(kode_pesanan) {
   try {
     const users = await showOrders(kode_pesanan);
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
+async function getOrdersByUserId(userId) {
+  try {
+    const users = await showOrdersByUserId(userId);
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
+async function getOrdersByUserIdAndStatus(userId, status) {
+  try {
+    const users = await showOrdersByUserIdAndStatus(userId, status);
     return users;
   } catch (error) {
     throw error;
@@ -35,6 +60,9 @@ async function createOrder(formData) {
   try {
     //mencari katalog dan menghitung total harga
     const product = await getKatalogByProductCode(formData.kode_produk);
+    if (product.stok_produk <= 0) {
+      throw new Error('Stock Kosong!');
+    }
     const pembeli = await getPembeliById(formData.id_pembeli);
     const sum = product.harga_produk * formData.total_pesanan;
     formData.total_harga = sum;
@@ -65,9 +93,9 @@ async function createOrder(formData) {
         email: pembeli.email,
       },
       callbacks: {
-        finish: `${FRONT_END_URL}/order-status?transaction_id=${primaryKey}`,
-        error: `${FRONT_END_URL}/order-status?transaction_id=${primaryKey}`,
-        pending: `${FRONT_END_URL}/order-status?transaction_id=${primaryKey}`,
+        finish: `${FRONT_END_URL}/orders`,
+        error: `${FRONT_END_URL}/orders`,
+        pending: `${FRONT_END_URL}/orders`,
       },
     };
 
@@ -92,7 +120,10 @@ async function createOrder(formData) {
       };
     }
 
-    const order = await insertOrder(formData);
+    const order = await insertOrder({
+      ...formData,
+      snap_token: midtransData.token,
+    });
 
     return {
       id: order.insertId,
@@ -111,7 +142,109 @@ async function createOrder(formData) {
   }
 }
 
+async function editOrderStatusAndPayment(id_order, status, payment_type) {
+  try {
+    const order = await updateOrderStatusAndPayment(
+      id_order,
+      status,
+      payment_type,
+    );
+    return {
+      ...order,
+      sql: `UPDATE tbl_order SET status = '${status}', jenis_pembayaran = '${payment_type}' WHERE kode_pesanan = '${id_order}'`,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getOrderByOrderCode(orderCode) {
+  try {
+    const results = await findOrderByOrderCode(orderCode);
+    if (results.length > 0) {
+      return results[0];
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function updateStatusBasedOnMidtransResponse(transaction_id, data) {
+  const foundOrder = await getOrderByOrderCode(transaction_id);
+  if (!foundOrder)
+    return {
+      status: 'error',
+      message: 'Order Id not Found',
+    };
+
+  const hash = crypto
+    .createHash('sha512')
+    .update(
+      `${transaction_id}${data.status_code}${data.gross_amount}${MIDTRANS_SERVER_KEY}`,
+    )
+    .digest('hex');
+  if (data.signature_key !== hash) {
+    return {
+      status: 'error',
+      message: 'Invalid Signature key',
+      realkey: data.signature_key,
+      testkey: hash,
+    };
+  }
+
+  let responseData = null;
+  let transactionStatus = data.transaction_status;
+  let paymentType = data.payment_type;
+  let fraudStatus = data.fraud_status;
+
+  if (transactionStatus == 'capture') {
+    if (fraudStatus == 'accept') {
+      const transaction = await editOrderStatusAndPayment(
+        transaction_id,
+        'PAID',
+        paymentType,
+      );
+      responseData = transaction;
+    }
+  } else if (transactionStatus == 'settlement') {
+    const transaction = await editOrderStatusAndPayment(
+      transaction_id,
+      'PAID',
+      paymentType,
+    );
+    responseData = transaction;
+  } else if (
+    transactionStatus == 'cancel' ||
+    transactionStatus == 'deny' ||
+    transactionStatus == 'expire'
+  ) {
+    const transaction = await editOrderStatusAndPayment(
+      transaction_id,
+      'CANCELED',
+      '',
+    );
+    responseData = transaction;
+  } else if (transactionStatus == 'pending') {
+    const transaction = await editOrderStatusAndPayment(
+      transaction_id,
+      'PENDING',
+      '',
+    );
+    responseData = transaction;
+  }
+
+  return {
+    status: 'success',
+    data: responseData,
+  };
+}
+
 module.exports = {
   createOrder,
   getOrders,
+  // getOrdersByAdminId,
+  updateStatusBasedOnMidtransResponse,
+  getOrdersByUserId,
+  getOrdersByUserIdAndStatus,
 };
