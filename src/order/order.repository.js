@@ -54,8 +54,20 @@ async function updateOrderStatus(id_order, status) {
   })
 }
 
+async function findOrderById(id_order) {
+  return new Promise((resolve, reject) => {
+    connection.query(`Select * from tbl_order WHERE id_order = '${id_order}'`, (error, results) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
+}
+
 module.exports = {
   showOrders,
   insertOrder,
-  updateOrderStatus
+  updateOrderStatus,
+  findOrderById,
 };

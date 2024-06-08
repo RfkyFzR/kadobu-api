@@ -2,6 +2,7 @@ const {
   showOrders,
   insertOrder,
   updateOrderStatus,
+  findOrderById,
 } = require("./order.repository.js");
 const midtransClient = require("midtrans-client");
 const {
@@ -45,9 +46,6 @@ async function createOrder(formData) {
     const pembeli = await getPembeliById(formData.id_pembeli);
     const sum = product.harga_produk * formData.total_pesanan;
     formData.total_harga = sum;
-    //mengurangi stok produk dan melakukan update
-    const stock = product.stok_produk - formData.total_pesanan;
-    await updateStockProduk(stock, formData.kode_produk);
     //Menambah total penjualan
     formData.total_penjualan = formData.total_pesanan
     //generate kode produk
@@ -120,9 +118,31 @@ async function createOrder(formData) {
   }
 }
 
+async function getOrderById(id_order) {
+  try {
+    const results = await findOrderById(id_order);
+    if (results.length > 0) {
+      return results[0];
+    }
+    throw new Error('Order Tidak Ditemukan');
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function editOrderStatus(id_order, status) {
   try {
     const order = await updateOrderStatus(id_order, status);
+
+    if (status === "Accepted"){
+      //mengurangi stok produk apabila statusnya sudah accept dengan cara update
+      const order = await getOrderById(id_order)
+      const product = await getKatalogByProductCode(order.kode_produk);
+      const stock = product.stok_produk - order.total_pesanan
+      console.log(product.stok_produk);
+      await updateStockProduk(stock, order.kode_produk);
+      return order;
+    }
     return order;
   } catch (error) {
     throw error;
