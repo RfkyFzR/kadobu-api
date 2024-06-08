@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const {
+  getKatalogByStoreId,
   getKatalogs,
   createKatalog,
   removeKatalog,
@@ -37,7 +38,13 @@ router.get('/:kode_produk', apiKeyMiddleware, async (req, res) => {
 router.get('/', apiKeyMiddleware, async (req, res) => {
   try {
     const find = req.query.cari || '';
-    const responseKatalog = await getKatalogs(find);
+    const storeId = req.query.storeId;
+    let responseKatalog;
+    if (storeId) {
+      responseKatalog = await getKatalogByStoreId(storeId);
+    } else {
+      responseKatalog = await getKatalogs(find);
+    }
     if (responseKatalog.length !== 0) {
       return res.status(200).json({
         status: true,

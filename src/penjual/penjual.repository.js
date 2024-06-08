@@ -16,7 +16,7 @@ async function showPenjual() {
 async function showPenjualById(id) {
   return new Promise((resolve, reject) => {
     connection.query(
-      `SELECT * FROM tbl_penjual ORDER BY id desc WHERE id_penjual = ${id}`,
+      `SELECT * FROM tbl_penjual WHERE id_penjual = '${id}'`,
       (error, results) => {
         if (error) {
           return reject(error);

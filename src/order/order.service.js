@@ -3,10 +3,13 @@ const crypto = require('crypto');
 const {
   showOrders,
   showOrdersByUserId,
+  showOrdersByStoreId,
   insertOrder,
   updateOrderStatusAndPayment,
   showOrdersByUserIdAndStatus,
   findOrderByOrderCode,
+  showOrdersByCodeAndStoreId,
+  updateOrderStatusAndKeterangan,
 } = require('./order.repository.js');
 const midtransClient = require('midtrans-client');
 const {
@@ -35,6 +38,26 @@ async function getOrdersByUserId(userId) {
     throw error;
   }
 }
+async function getOrdersByStoreId(storeId) {
+  try {
+    const users = await showOrdersByStoreId(storeId);
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getOrdersByCodeAndStoreId(kode, storeId) {
+  try {
+    const users = await showOrdersByCodeAndStoreId(kode, storeId);
+    if (users) {
+      return users[0];
+    }
+    return null;
+  } catch (error) {
+    throw error;
+  }
+}
 async function getOrdersByUserIdAndStatus(userId, status) {
   try {
     const users = await showOrdersByUserIdAndStatus(userId, status);
@@ -51,6 +74,26 @@ async function getKatalogByProductCode(kode_produk) {
       return results[0];
     }
     return null;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function createGuestOrder(formData) {
+  try {
+    const product = await getKatalogByProductCode(formData.kode_produk);
+    if (product.stok_produk <= 0) {
+      throw new Error('Stock Kosong!');
+    }
+    const sum = product.harga_produk * formData.total_pesanan;
+    const data = {
+      ...formData,
+      kode_pesanan: orderCodeGenerator(formData.kode_pesanan),
+      total_harga: sum,
+    };
+
+    const order = await insertOrder(data);
+    return order;
   } catch (error) {
     throw error;
   }
@@ -127,7 +170,7 @@ async function createOrder(formData) {
 
     return {
       id: order.insertId,
-      status: 'PENDING_PAYMENT',
+      status: 'PENDING',
       customer_name: pembeli.username,
       customer_email: pembeli.email,
       products: product,
@@ -149,10 +192,19 @@ async function editOrderStatusAndPayment(id_order, status, payment_type) {
       status,
       payment_type,
     );
-    return {
-      ...order,
-      sql: `UPDATE tbl_order SET status = '${status}', jenis_pembayaran = '${payment_type}' WHERE kode_pesanan = '${id_order}'`,
-    };
+    return order;
+  } catch (error) {
+    throw error;
+  }
+}
+async function editOrderStatusAndKeterangan(id_order, status, keterangan) {
+  try {
+    const order = await updateOrderStatusAndKeterangan(
+      id_order,
+      status,
+      keterangan,
+    );
+    return order;
   } catch (error) {
     throw error;
   }
@@ -244,7 +296,11 @@ module.exports = {
   createOrder,
   getOrders,
   // getOrdersByAdminId,
+  editOrderStatusAndKeterangan,
+  getOrdersByCodeAndStoreId,
+  getOrdersByStoreId,
   updateStatusBasedOnMidtransResponse,
   getOrdersByUserId,
   getOrdersByUserIdAndStatus,
+  createGuestOrder,
 };

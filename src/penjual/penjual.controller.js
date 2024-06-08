@@ -20,12 +20,26 @@ router.get('/', apiKeyMiddleware, async (req, res) => {
 
 router.get('/:id', apiKeyMiddleware, async (req, res) => {
   const id = req.params.id;
-  const responsePenjual = await getPenjualById(id);
-  return res.status(200).json({
-    status: true,
-    message: 'List Data Penjual',
-    data: responsePenjual,
-  });
+  try {
+    const responsePenjual = await getPenjualById(id);
+    if (responsePenjual) {
+      return res.status(200).json({
+        status: true,
+        message: 'List Data Penjual',
+        data: responsePenjual,
+      });
+    }
+    return res.status(400).json({
+      status: false,
+      message: 'Penjual Not Found',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: 'Get Data by id error',
+      error: error.message,
+    });
+  }
 });
 
 router.post(

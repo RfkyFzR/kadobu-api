@@ -11,10 +11,16 @@ const apiKeyMiddleware = require('../helper/apiAuth.js');
 
 router.get('/:id', apiKeyMiddleware, async (req, res) => {
   const responsePengguna = await getPembeliById(req.params.id);
-  return res.status(200).json({
+  if (responsePengguna) {
+    return res.status(200).json({
+      status: true,
+      message: 'List Data Pengguna',
+      data: responsePengguna,
+    });
+  }
+  return res.status(400).json({
     status: true,
-    message: 'List Data Pengguna',
-    data: responsePengguna,
+    message: 'User Not Found',
   });
 });
 router.get('/', apiKeyMiddleware, async (req, res) => {

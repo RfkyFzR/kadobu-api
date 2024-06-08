@@ -48,7 +48,7 @@ async function getPembeliById(id) {
     if (results.length > 0) {
       return results[0];
     }
-    throw new Error('ID tidak ditemukan');
+    return null;
   } catch (error) {
     throw error;
   }

@@ -12,10 +12,13 @@ async function getPenjual() {
     throw error;
   }
 }
-async function getPenjualById() {
+async function getPenjualById(id) {
   try {
-    const users = await showPenjualById();
-    return users;
+    const users = await showPenjualById(id);
+    if (users.length > 0) {
+      return users[0];
+    }
+    return null;
   } catch (error) {
     throw error;
   }
@@ -33,4 +36,5 @@ async function addPenjual(formData) {
 module.exports = {
   getPenjual,
   addPenjual,
+  getPenjualById,
 };
