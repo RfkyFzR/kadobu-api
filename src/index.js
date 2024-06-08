@@ -21,6 +21,7 @@ const signUpPembeliController = require('./signup-pembeli/signup-pembeli.control
 const signUpPenjualController = require('./signup-penjual/signup-penjual.controller.js');
 const signInPembeliController = require('./signin-pembeli/signin-pembeli.controller.js');
 const orderController = require('./order/order.controller.js');
+const statisticsController = require('./statistik/statistik.controller.js');
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
@@ -40,6 +41,7 @@ app.use('/katalogs', katalogController);
 app.use('/toko', tokoController);
 app.use('/invite-staff', inviteStaffController);
 app.use('/order', orderController);
+app.use('/statistik', statisticsController);
 
 app.listen(port, () => {
   console.log(`Halaman dimuat pada http://localhost:${port}`);

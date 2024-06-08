@@ -48,6 +48,8 @@ async function createOrder(formData) {
     //mengurangi stok produk dan melakukan update
     const stock = product.stok_produk - formData.total_pesanan;
     await updateStockProduk(stock, formData.kode_produk);
+    //Menambah total penjualan
+    formData.total_penjualan = formData.total_pesanan
     //generate kode produk
     const primaryKey = orderCodeGenerator(formData.kode_pesanan);
     formData.kode_pesanan = primaryKey;

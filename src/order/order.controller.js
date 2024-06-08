@@ -90,6 +90,7 @@ router.post(
         keterangan: req.body.keterangan,
         total_pesanan: req.body.totalPesanan,
         total_harga: req.body.totalHarga,
+        total_penjualan: req.body.totalPenjualan,
       };
       const order = await createOrder(formData);
 
