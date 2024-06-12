@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 app.use(cors());
 const port = process.env.PORT;
-// const route = require('./routes/index.js');
+const route = require('./routes/index.js');
 const bodyParser = require('body-parser');
 const pembeliController = require('./pembeli/pembeli.controller.js');
 const katalogController = require('./katalog/katalog.controller.js');
@@ -29,7 +29,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 // app.use(multer().array())
-// app.use(route);
+app.use(route);
 app.use(express.json());
 
 app.use('/signup-pembeli', signUpPembeliController);

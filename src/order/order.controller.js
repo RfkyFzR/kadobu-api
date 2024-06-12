@@ -71,6 +71,7 @@ router.post(
     body('kodeProduk').notEmpty(),
     body('keterangan').notEmpty(),
     body('totalPesanan').notEmpty(),
+    body('idPenjual').notEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -92,7 +93,9 @@ router.post(
         total_harga: req.body.totalHarga,
         total_penjualan: req.body.totalPenjualan,
       };
-      const order = await createOrder(formData);
+      id_penjual = req.body.idPenjual;
+
+      const order = await createOrder(formData, id_penjual);
 
       return res.status(200).json({
         status: true,

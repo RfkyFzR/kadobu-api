@@ -9,11 +9,15 @@ const {
   findKatalogByProductCode,
   updateStockProduk,
 } = require("../katalog/katalog.repository.js");
+const {
+  findPenjualById,
+} = require ("../penjual/penjual.repository.js")
 const orderCodeGenerator = require("../helper/OrderCodeGenerator.js");
 const { getPembeliById } = require("../pembeli/pembeli.service");
 
 const { MIDTRANS_APP_URL, MIDTRANS_SERVER_KEY } = require("../config/midtrans");
 const { FRONT_END_URL } = require("../config/frontend");
+const { sendEmails } = require('../helper/sendEmails.js');
 
 async function getOrders(kode_pesanan) {
   try {
@@ -36,7 +40,19 @@ async function getKatalogByProductCode(kode_produk) {
   }
 }
 
-async function createOrder(formData) {
+async function getPenjualById(id_Penjual) {
+  try {
+    const results = await findPenjualById(id_Penjual);
+    if (results.length > 0) {
+      return results[0];
+    }
+    return null;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function createOrder(formData, id_penjual) {
   try {
     //mencari katalog dan menghitung total harga
     const product = await getKatalogByProductCode(formData.kode_produk);
@@ -98,7 +114,11 @@ async function createOrder(formData) {
         Authorization: `${MIDTRANS_SERVER_KEY}`,
       };
     }
+    //mengirim notif ke email bahwa terdapat order masuk
+    const penjual = await getPenjualById(id_penjual);
+    sendEmails(penjual.email, pembeli.username, product.nama_produk)
 
+    //insert db pada tbl_order
     const order = await insertOrder(formData);
 
     return {
