@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 app.use(cors());
 const port = process.env.PORT;
-const route = require('./routes/index.js');
+// const route = require('./routes/index.js');
 const bodyParser = require('body-parser');
 const pembeliController = require('./pembeli/pembeli.controller.js');
 const katalogController = require('./katalog/katalog.controller.js');
@@ -22,6 +22,8 @@ const signUpPenjualController = require('./signup-penjual/signup-penjual.control
 const signInPembeliController = require('./signin-pembeli/signin-pembeli.controller.js');
 const orderController = require('./order/order.controller.js');
 const statisticsController = require('./statistik/statistik.controller.js');
+const wishlistController = require('./wishlist/wishlist.controller.js');
+const keranjangController = require('./keranjang/keranjang.controller.js');
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
@@ -29,7 +31,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 // app.use(multer().array())
-app.use(route);
+// app.use(route);
 app.use(express.json());
 
 app.use('/signup-pembeli', signUpPembeliController);
@@ -42,6 +44,8 @@ app.use('/toko', tokoController);
 app.use('/invite-staff', inviteStaffController);
 app.use('/order', orderController);
 app.use('/statistik', statisticsController);
+app.use('/wishlist', wishlistController);
+app.use('/keranjang', keranjangController);
 
 app.listen(port, () => {
   console.log(`Halaman dimuat pada http://localhost:${port}`);
