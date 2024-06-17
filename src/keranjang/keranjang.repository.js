@@ -66,7 +66,53 @@ async function showKeranjangByIdToko(id_toko) {
   });
 }
 
+async function insertKeranjang(formData) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      "INSERT INTO tbl_keranjang SET ?",
+      formData,
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      }
+    );
+  });
+}
+
+async function deleteKeranjang(id_keranjang) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `DELETE FROM tbl_keranjang WHERE id_keranjang = '${id_keranjang}'`,
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      }
+    );
+  });
+}
+
+async function findKeranjangById(id_keranjang) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `SELECT * FROM tbl_keranjang WHERE id_keranjang = '${id_keranjang}'`,
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      }
+    );
+  });
+}
+
 module.exports = {
   showKeranjangByIdPembeli,
   showKeranjangByIdToko,
+  insertKeranjang,
+  deleteKeranjang,
+  findKeranjangById,
 };

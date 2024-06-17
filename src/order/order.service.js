@@ -173,4 +173,5 @@ module.exports = {
   createOrder,
   getOrders,
   editOrderStatus,
+  getOrderById,
 };
