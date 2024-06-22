@@ -1,18 +1,34 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const { body, validationResult } = require("express-validator");
+const { body, validationResult } = require('express-validator');
 const {
   getPembeli,
+  getPembeliById,
   addPembeli,
-} = require("./pembeli.service.js");
-const upload = require("../helper/fileAttachment.js");
+
+} = require('./pembeli.service.js');
+const upload = require('../helper/fileAttachment.js');
 const apiKeyMiddleware = require('../helper/apiAuth.js');
 
-router.get("/", apiKeyMiddleware, async (req, res) => {
+router.get('/:id', apiKeyMiddleware, async (req, res) => {
+  const responsePengguna = await getPembeliById(req.params.id);
+  if (responsePengguna) {
+    return res.status(200).json({
+      status: true,
+      message: 'List Data Pengguna',
+      data: responsePengguna,
+    });
+  }
+  return res.status(400).json({
+    status: true,
+    message: 'User Not Found',
+  });
+});
+router.get('/', apiKeyMiddleware, async (req, res) => {
   const responsePengguna = await getPembeli();
   return res.status(200).json({
     status: true,
-    message: "List Data Pengguna",
+    message: 'List Data Pengguna',
     data: responsePengguna,
   });
 });
@@ -22,9 +38,9 @@ router.post(
   apiKeyMiddleware,
   upload.any(),
   [
-    body("idPembeli").notEmpty(), 
-    body("email").notEmpty(),
-    body("username").notEmpty(),
+    body('idPembeli').notEmpty(),
+    body('email').notEmpty(),
+    body('username').notEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -42,22 +58,21 @@ router.post(
       await addPembeli(formData);
       return res.status(200).json({
         status: true,
-        message: "Pembeli berhasil didaftarkan!",
-      })
-    } 
-    catch (error) {
-      if (error.errno === 1062){
+        message: 'Pembeli berhasil didaftarkan!',
+      });
+    } catch (error) {
+      if (error.errno === 1062) {
         return res.status(400).json({
           status: false,
-          message: "Username, email atau id sudah terdaftar!"
-        })
+          message: 'Username, email atau id sudah terdaftar!',
+        });
       }
       return res.status(500).json({
         status: false,
         message: `Error: Post pembeli fails, ${error.message}`,
       });
     }
-  }
+  },
 );
 
 module.exports = router;

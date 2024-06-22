@@ -1,10 +1,18 @@
+
+const crypto = require('crypto');
+
 const {
   showOrders,
+  showOrdersByUserId,
+  showOrdersByStoreId,
   insertOrder,
-  updateOrderStatus,
-  findOrderById,
-} = require("./order.repository.js");
-const midtransClient = require("midtrans-client");
+  updateOrderStatusAndPayment,
+  showOrdersByUserIdAndStatus,
+  findOrderByOrderCode,
+  showOrdersByCodeAndStoreId,
+  updateOrderStatusAndKeterangan,
+} = require('./order.repository.js');
+const midtransClient = require('midtrans-client');
 const {
   findKatalogByProductCode,
   updateStockProduk,
@@ -27,6 +35,42 @@ async function getOrders(kode_pesanan) {
     throw error;
   }
 }
+async function getOrdersByUserId(userId) {
+  try {
+    const users = await showOrdersByUserId(userId);
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
+async function getOrdersByStoreId(storeId) {
+  try {
+    const users = await showOrdersByStoreId(storeId);
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getOrdersByCodeAndStoreId(kode, storeId) {
+  try {
+    const users = await showOrdersByCodeAndStoreId(kode, storeId);
+    if (users) {
+      return users[0];
+    }
+    return null;
+  } catch (error) {
+    throw error;
+  }
+}
+async function getOrdersByUserIdAndStatus(userId, status) {
+  try {
+    const users = await showOrdersByUserIdAndStatus(userId, status);
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
 
 async function getKatalogByProductCode(kode_produk) {
   try {
@@ -40,24 +84,32 @@ async function getKatalogByProductCode(kode_produk) {
   }
 }
 
-async function getPenjualById(id_Penjual) {
+async function createGuestOrder(formData) {
   try {
-    const results = await findPenjualById(id_Penjual);
-    if (results.length > 0) {
-      return results[0];
+    const product = await getKatalogByProductCode(formData.kode_produk);
+    if (product.stok_produk <= 0) {
+      throw new Error('Stock Kosong!');
     }
-    return null;
+    const sum = product.harga_produk * formData.total_pesanan;
+    const data = {
+      ...formData,
+      kode_pesanan: orderCodeGenerator(formData.kode_pesanan),
+      total_harga: sum,
+    };
+
+    const order = await insertOrder(data);
+    return order;
   } catch (error) {
     throw error;
   }
 }
 
-async function createOrder(formData, id_penjual) {
+async function createOrder(formData) {
   try {
     //mencari katalog dan menghitung total harga
     const product = await getKatalogByProductCode(formData.kode_produk);
     if (product.stok_produk <= 0) {
-      throw new Error("Stock Kosong!");
+      throw new Error('Stock Kosong!');
     }
     const pembeli = await getPembeliById(formData.id_pembeli);
     const sum = product.harga_produk * formData.total_pesanan;
@@ -88,9 +140,9 @@ async function createOrder(formData, id_penjual) {
         email: pembeli.email,
       },
       callbacks: {
-        finish: `${FRONT_END_URL}/order-status?transaction_id=${primaryKey}`,
-        error: `${FRONT_END_URL}/order-status?transaction_id=${primaryKey}`,
-        pending: `${FRONT_END_URL}/order-status?transaction_id=${primaryKey}`,
+        finish: `${FRONT_END_URL}/orders`,
+        error: `${FRONT_END_URL}/orders`,
+        pending: `${FRONT_END_URL}/orders`,
       },
     };
 
@@ -118,12 +170,14 @@ async function createOrder(formData, id_penjual) {
     const penjual = await getPenjualById(id_penjual);
     sendEmails(penjual.email, pembeli.username, product.nama_produk)
 
-    //insert db pada tbl_order
-    const order = await insertOrder(formData);
+    const order = await insertOrder({
+      ...formData,
+      snap_token: midtransData.token,
+    });
 
     return {
       id: order.insertId,
-      status: "PENDING_PAYMENT",
+      status: 'PENDING',
       customer_name: pembeli.username,
       customer_email: pembeli.email,
       products: product,
@@ -138,40 +192,122 @@ async function createOrder(formData, id_penjual) {
   }
 }
 
-async function getOrderById(id_order) {
+async function editOrderStatusAndPayment(id_order, status, payment_type) {
   try {
-    const results = await findOrderById(id_order);
-    if (results.length > 0) {
-      return results[0];
-    }
-    throw new Error('Order Tidak Ditemukan');
+    const order = await updateOrderStatusAndPayment(
+      id_order,
+      status,
+      payment_type,
+    );
+    return order;
   } catch (error) {
     throw error;
   }
 }
-
-async function editOrderStatus(id_order, status) {
+async function editOrderStatusAndKeterangan(id_order, status, keterangan) {
   try {
-    const order = await updateOrderStatus(id_order, status);
-
-    if (status === "Accepted"){
-      //mengurangi stok produk apabila statusnya sudah accept dengan cara update
-      const order = await getOrderById(id_order)
-      const product = await getKatalogByProductCode(order.kode_produk);
-      const stock = product.stok_produk - order.total_pesanan
-      console.log(product.stok_produk);
-      await updateStockProduk(stock, order.kode_produk);
-      return order;
-    }
+    const order = await updateOrderStatusAndKeterangan(
+      id_order,
+      status,
+      keterangan,
+    );
     return order;
   } catch (error) {
     throw error;
   }
 }
 
+async function getOrderByOrderCode(orderCode) {
+  try {
+    const results = await findOrderByOrderCode(orderCode);
+    if (results.length > 0) {
+      return results[0];
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function updateStatusBasedOnMidtransResponse(transaction_id, data) {
+  const foundOrder = await getOrderByOrderCode(transaction_id);
+  if (!foundOrder)
+    return {
+      status: 'error',
+      message: 'Order Id not Found',
+    };
+
+  const hash = crypto
+    .createHash('sha512')
+    .update(
+      `${transaction_id}${data.status_code}${data.gross_amount}${MIDTRANS_SERVER_KEY}`,
+    )
+    .digest('hex');
+  if (data.signature_key !== hash) {
+    return {
+      status: 'error',
+      message: 'Invalid Signature key',
+      realkey: data.signature_key,
+      testkey: hash,
+    };
+  }
+
+  let responseData = null;
+  let transactionStatus = data.transaction_status;
+  let paymentType = data.payment_type;
+  let fraudStatus = data.fraud_status;
+
+  if (transactionStatus == 'capture') {
+    if (fraudStatus == 'accept') {
+      const transaction = await editOrderStatusAndPayment(
+        transaction_id,
+        'PAID',
+        paymentType,
+      );
+      responseData = transaction;
+    }
+  } else if (transactionStatus == 'settlement') {
+    const transaction = await editOrderStatusAndPayment(
+      transaction_id,
+      'PAID',
+      paymentType,
+    );
+    responseData = transaction;
+  } else if (
+    transactionStatus == 'cancel' ||
+    transactionStatus == 'deny' ||
+    transactionStatus == 'expire'
+  ) {
+    const transaction = await editOrderStatusAndPayment(
+      transaction_id,
+      'CANCELED',
+      '',
+    );
+    responseData = transaction;
+  } else if (transactionStatus == 'pending') {
+    const transaction = await editOrderStatusAndPayment(
+      transaction_id,
+      'PENDING',
+      '',
+    );
+    responseData = transaction;
+  }
+
+  return {
+    status: 'success',
+    data: responseData,
+  };
+}
+
 module.exports = {
   createOrder,
   getOrders,
-  editOrderStatus,
-  getOrderById,
+  // getOrdersByAdminId,
+  editOrderStatusAndKeterangan,
+  getOrdersByCodeAndStoreId,
+  getOrdersByStoreId,
+  updateStatusBasedOnMidtransResponse,
+  getOrdersByUserId,
+  getOrdersByUserIdAndStatus,
+  createGuestOrder,
 };

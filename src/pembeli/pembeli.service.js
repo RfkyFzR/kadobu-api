@@ -1,5 +1,6 @@
 const {
   showPembeli,
+  showPembeliById,
   insertPembeli,
   findPembeliByEmail,
   findPembeliById,
@@ -11,6 +12,19 @@ const { generateToken } = require('../helper/tokengenerator.js');
 async function getPembeli() {
   try {
     const users = await showPembeli();
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getPembeliById() {
+  try {
+    const users = await showPembeli();
+    if (users.length > 0) {
+      return users[0];
+    }
+    throw new Error('Pembeli Tidak Ditemukan');
     return users;
   } catch (error) {
     throw error;
@@ -34,7 +48,7 @@ async function getPembeliById(id) {
     if (results.length > 0) {
       return results[0];
     }
-    throw new Error('ID tidak ditemukan');
+    return null;
   } catch (error) {
     throw error;
   }
