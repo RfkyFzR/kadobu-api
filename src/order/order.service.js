@@ -1,3 +1,4 @@
+
 const crypto = require('crypto');
 
 const {
@@ -15,9 +16,12 @@ const midtransClient = require('midtrans-client');
 const {
   findKatalogByProductCode,
   updateStockProduk,
-} = require('../katalog/katalog.repository.js');
-const orderCodeGenerator = require('../helper/OrderCodeGenerator.js');
-const { getPembeliById } = require('../pembeli/pembeli.service');
+} = require("../katalog/katalog.repository.js");
+const {
+  findPenjualById,
+} = require ("../penjual/penjual.repository.js")
+const orderCodeGenerator = require("../helper/OrderCodeGenerator.js");
+const { getPembeliById } = require("../pembeli/pembeli.service");
 
 const { MIDTRANS_APP_URL, MIDTRANS_SERVER_KEY } = require('../config/midtrans');
 const { FRONT_END_URL } = require('../config/frontend');
@@ -29,6 +33,7 @@ const {
   updateIdOrderKeranjangById,
   getKeranjangByOrderId,
 } = require('../keranjang/keranjang.repository.js');
+
 
 async function getOrders(kode_pesanan) {
   try {
@@ -135,6 +140,7 @@ async function createOrder(formData) {
     const pembeli = await getPembeliById(formData.id_pembeli);
     formData.total_harga = sum;
     //mengurangi stok produk dan melakukan update
+
     //generate kode produk
     const primaryKey = orderCodeGenerator(formData.kode_pesanan);
     formData.kode_pesanan = primaryKey;
@@ -159,10 +165,10 @@ async function createOrder(formData) {
     };
 
     const midtransResponse = await fetch(`${MIDTRANS_APP_URL}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+        "Content-Type": "application/json",
+        Accept: "application/json",
         Authorization: `Basic ${authString}`,
       },
       body: JSON.stringify(payload),
@@ -172,13 +178,14 @@ async function createOrder(formData) {
     if (midtransResponse.status !== 201) {
       console.log(midtransResponse.status);
       return {
-        status: 'error',
-        message: 'Failed to create transaction',
+        status: "error",
+        message: "Failed to create transaction",
         data: midtransData,
         Authorization: `${MIDTRANS_SERVER_KEY}`,
       };
     }
     delete formData.list_keranjang;
+
     const order = await insertOrder({
       ...formData,
       snap_token: midtransData.token,

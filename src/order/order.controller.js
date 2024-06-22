@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const upload = require('../helper/fileAttachment.js');
+
 const {
   getOrders,
   getOrdersByStoreId,
@@ -101,6 +102,7 @@ router.patch(
     }
     try {
       let id_order = req.params.idOrder;
+
       const responseOrder = await editOrderStatusAndKeterangan(
         id_order,
         req.body.status,
@@ -131,7 +133,8 @@ router.post(
   apiKeyMiddleware,
   upload.none(),
   [body('idPembeli').notEmpty(), body('listKeranjang').notEmpty()],
-  async (req, res) => {
+
+  async (req, res) https://github.com/security=> {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({

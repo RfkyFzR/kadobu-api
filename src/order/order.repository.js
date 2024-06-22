@@ -270,6 +270,28 @@ async function updateOrderStatusAndKeterangan(id_order, status, keterangan) {
   });
 }
 
+async function updateOrderStatus(id_order, status) {
+  return new Promise((resolve, reject) => {
+    connection.query(`UPDATE tbl_order SET status = '${status}' WHERE id_order = '${id_order}'`, (error, results) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
+}
+
+async function findOrderById(id_order) {
+  return new Promise((resolve, reject) => {
+    connection.query(`Select * from tbl_order WHERE id_order = '${id_order}'`, (error, results) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
+}
+
 module.exports = {
   showOrders,
   updateOrderStatusAndKeterangan,

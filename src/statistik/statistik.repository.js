@@ -63,3 +63,4 @@ ORDER BY
 module.exports = {
   showStatisticsInYear,
 };
+

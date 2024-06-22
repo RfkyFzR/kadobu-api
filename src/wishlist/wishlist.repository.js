@@ -19,6 +19,7 @@ async function showWishlistByIdPembeli(id_pembeli) {
       FROM tbl_wishlist
       INNER JOIN tbl_katalog ON tbl_wishlist.kode_produk = tbl_katalog.kode_produk
       INNER JOIN tbl_toko ON tbl_katalog.id_toko = tbl_toko.id_toko
+
       AND tbl_wishlist.id_pembeli = '${id_pembeli}'`,
       (error, results) => {
         if (error) {

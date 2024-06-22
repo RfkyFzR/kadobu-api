@@ -17,3 +17,4 @@ async function getStatisticsInYear(id_toko, year) {
 module.exports = {
   getStatisticsInYear,
 };
+

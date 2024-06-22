@@ -44,7 +44,7 @@ router.get('/:id', apiKeyMiddleware, async (req, res) => {
 });
 
 router.post(
-  '/',
+  "/",
   apiKeyMiddleware,
   upload.any(),
   [

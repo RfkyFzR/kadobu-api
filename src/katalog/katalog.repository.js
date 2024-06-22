@@ -131,16 +131,30 @@ tbl_toko.alamat_toko,
 
 async function updateStockProduk(stok_produk, kode_produk) {
   return new Promise((resolve, reject) => {
+    connection.query(`UPDATE tbl_katalog SET stok_produk = '${stok_produk}' WHERE kode_produk = '${kode_produk}'`, (error, results) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
+}
+
+async function countsKatalogsReady(id_toko) {
+  return new Promise((resolve, reject) => {
     connection.query(
-      `UPDATE tbl_katalog SET stok_produk = '${stok_produk}' WHERE kode_produk = '${kode_produk}'`,
-      (error, results) => {
-        if (error) {
-          return reject(error);
-        }
-        return resolve(results);
-      },
-    );
-  });
+    `SELECT COUNT(*) AS total_produk
+    FROM tbl_katalog
+    WHERE deleted_at IS NULL
+    AND status_produk = 'Ready'
+    AND id_toko = '${id_toko}';
+    `, (error, results) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
 }
 
 async function countsKatalogsReady(id_toko) {
@@ -169,5 +183,6 @@ module.exports = {
   deleteKatalog,
   findKatalogByProductCode,
   updateStockProduk,
+  countsKatalogsReady,
   findKatalogByStoreId,
 };

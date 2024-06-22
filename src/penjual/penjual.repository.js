@@ -84,6 +84,18 @@ async function updateRoleKaryawan(formData) {
   });
 }
 
+async function findPenjualById(id_penjual) {
+  return new Promise((resolve, reject) => {
+    connection.query(`SELECT * FROM tbl_penjual WHERE id_penjual = '${id_penjual}'`, (error, results) => {
+      
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
+}
+
 module.exports = {
   showPenjual,
   showPenjualById,

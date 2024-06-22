@@ -32,7 +32,7 @@ async function getKeranjangByIdToko(id_toko) {
 async function createKeranjang(formData) {
   try {
     const katalog = await getKatalogByProductCode(formData.kode_produk);
-    formData.total_harga = formData.jumlah_pesanan * katalog.harga_produk;
+   formData.total_harga = formData.jumlah_pesanan * katalog.harga_produk;
     const keranjang = await insertKeranjang(formData);
     return keranjang;
   } catch (error) {

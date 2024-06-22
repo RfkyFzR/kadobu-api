@@ -176,6 +176,7 @@ module.exports = {
   showKeranjangByIdToko,
   insertKeranjang,
   updateIdOrderKeranjangById,
+
   deleteKeranjang,
   findKeranjangById,
 };

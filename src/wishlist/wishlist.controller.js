@@ -103,6 +103,7 @@ router.post(
         status: false,
         message: 'Data tidak boleh kosong',
         erros: errors,
+
       });
     }
     try {
@@ -115,6 +116,7 @@ router.post(
       return res.status(200).json({
         status: true,
         message: 'Wishlist berhasil ditambahkan!',
+
         data: formData,
       });
     } catch (error) {
@@ -140,6 +142,7 @@ router.delete('/(:id_wishlist)', apiKeyMiddleware, async (req, res) => {
     return res.status(400).json({
       status: false,
       message: 'Wishlist tidak ditemukan!',
+
     });
   } catch (error) {
     return res.status(500).json({
