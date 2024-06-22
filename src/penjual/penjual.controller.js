@@ -5,6 +5,7 @@ const {
   getPenjual,
   getPenjualById,
   addPenjual,
+  updatePenjual,
 } = require('./penjual.service.js');
 const upload = require('../helper/fileAttachment.js');
 const apiKeyMiddleware = require('../helper/apiAuth.js');
@@ -83,5 +84,29 @@ router.post(
     }
   },
 );
+router.patch('/:id', apiKeyMiddleware, upload.none(), [], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({
+      errors: errors.array(),
+    });
+  }
+  let formData = {
+    id_toko: req.body.idToko || 'NULL',
+    role: req.body.role || 'NULL',
+  };
+  try {
+    await updatePenjual(req.params.id, formData);
+    return res.status(200).json({
+      status: true,
+      message: 'Penjual berhasil diupdate!',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: `Error: Update penjual fails, ${error.message}`,
+    });
+  }
+});
 
 module.exports = router;

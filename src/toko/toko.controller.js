@@ -35,6 +35,8 @@ router.post(
     body('namaToko').notEmpty(),
     body('deskripsiToko').notEmpty(),
     body('alamatToko').notEmpty(),
+    body('teleponToko').notEmpty(),
+    body('lokasiToko').notEmpty(),
     body('idPenjual').notEmpty(),
   ],
   async (req, res) => {
@@ -56,6 +58,8 @@ router.post(
       nama_toko: req.body.namaToko,
       deskripsi_toko: req.body.deskripsiToko,
       alamat_toko: req.body.alamatToko,
+      telepon_toko: req.body.teleponToko,
+      lokasi_toko: req.body.lokasiToko,
       foto_profil: req.file.filename,
     };
     await createToko(formData, id_penjual);
@@ -75,6 +79,8 @@ router.patch(
     body('namaToko').notEmpty(),
     body('deskripsiToko').notEmpty(),
     body('alamatToko').notEmpty(),
+    body('lokasiToko').notEmpty(),
+    body('teleponToko').notEmpty(),
   ],
   async (req, res) => {
     if (req.fileValidationError) {
@@ -93,6 +99,8 @@ router.patch(
     let formData = {
       nama_toko: req.body.namaToko,
       deskripsi_toko: req.body.deskripsiToko,
+      telepon_toko: req.body.teleponToko,
+      lokasi_toko: req.body.lokasiToko,
       alamat_toko: req.body.alamatToko,
     };
     if (req.file) {
