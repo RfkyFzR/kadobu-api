@@ -1,4 +1,4 @@
-const connection = require("../config/database.js");
+const connection = require('../config/database.js');
 
 async function showWishlistByIdPembeli(id_pembeli) {
   return new Promise((resolve, reject) => {
@@ -12,19 +12,21 @@ async function showWishlistByIdPembeli(id_pembeli) {
       tbl_katalog.status_produk,
       tbl_katalog.foto_produk,
       tbl_katalog.created_at,
+      tbl_katalog.deleted_at,
       tbl_toko.nama_toko,
+      tbl_toko.alamat_toko,
       tbl_toko.id_toko
       FROM tbl_wishlist
       INNER JOIN tbl_katalog ON tbl_wishlist.kode_produk = tbl_katalog.kode_produk
       INNER JOIN tbl_toko ON tbl_katalog.id_toko = tbl_toko.id_toko
-      WHERE tbl_katalog.deleted_at IS NULL
+
       AND tbl_wishlist.id_pembeli = '${id_pembeli}'`,
       (error, results) => {
         if (error) {
           return reject(error);
         }
         return resolve(results);
-      }
+      },
     );
   });
 }
@@ -32,7 +34,7 @@ async function showWishlistByIdPembeli(id_pembeli) {
 async function showWishlistByIdProdukAndIdPembeli(kode_produk, id_pembeli) {
   return new Promise((resolve, reject) => {
     connection.query(
-      ` SELECT COUNT(*) AS is_liked
+      ` SELECT *
         FROM tbl_wishlist
         WHERE id_pembeli = '${id_pembeli}' AND kode_produk = '${kode_produk}';`,
       (error, results) => {
@@ -40,7 +42,7 @@ async function showWishlistByIdProdukAndIdPembeli(kode_produk, id_pembeli) {
           return reject(error);
         }
         return resolve(results);
-      }
+      },
     );
   });
 }
@@ -48,14 +50,14 @@ async function showWishlistByIdProdukAndIdPembeli(kode_produk, id_pembeli) {
 async function insertWishlist(formData) {
   return new Promise((resolve, reject) => {
     connection.query(
-      "INSERT INTO tbl_wishlist SET ?",
+      'INSERT INTO tbl_wishlist SET ?',
       formData,
       (error, results) => {
         if (error) {
           return reject(error);
         }
         return resolve(results);
-      }
+      },
     );
   });
 }
@@ -69,7 +71,7 @@ async function deleteWishlist(id_wishlist) {
           return reject(error);
         }
         return resolve(results);
-      }
+      },
     );
   });
 }

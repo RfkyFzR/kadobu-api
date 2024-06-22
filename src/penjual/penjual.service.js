@@ -2,6 +2,7 @@ const {
   showPenjual,
   showPenjualById,
   insertPenjual,
+  editPenjual,
 } = require('./penjual.repository.js');
 
 async function getPenjual() {
@@ -32,9 +33,18 @@ async function addPenjual(formData) {
     throw error;
   }
 }
+async function updatePenjual(id, formData) {
+  try {
+    const users = await editPenjual(id, formData);
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
 
 module.exports = {
   getPenjual,
   addPenjual,
   getPenjualById,
+  updatePenjual,
 };

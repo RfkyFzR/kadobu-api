@@ -1,27 +1,27 @@
-const multer = require("multer");
-const path = require("path");
+const multer = require('multer');
+const path = require('path');
 
 let storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    if (file.fieldname == "fotoProduk") {
-      cb(null, "./public/product_images/");
-    } else if (file.fieldname == "fotoProfil") {
-      cb(null, "./public/store_images/");
+    if (file.fieldname == 'fotoProduk') {
+      cb(null, './public/product_images/');
+    } else if (file.fieldname == 'fotoProfil') {
+      cb(null, './public/store_images/');
     }
   },
   filename: function (req, file, cb) {
     cb(
       null,
-      Date.now().toString() + path.extname(file.originalname).toLowerCase()
+      Date.now().toString() + path.extname(file.originalname).toLowerCase(),
     );
   },
 });
 
 const multerFilter = function (req, file, cb) {
   const ext = path.extname(file.originalname).toLowerCase();
-  if (ext !== ".jpg" && ext !== ".jpeg" && ext !== ".png") {
+  if (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.png' && ext !== '.webp') {
     req.fileValidationError =
-      "File Foto Harus Berekstensi jpg, jpeg, atau png!";
+      'File Foto Harus Berekstensi jpg, jpeg, webp, atau png!';
     return cb(null, false, req.fileValidationError);
   }
 

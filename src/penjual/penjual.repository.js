@@ -56,6 +56,20 @@ async function updateFkPenjual(id_toko, id_penjual) {
   });
 }
 
+async function editPenjual(id_penjual, data) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE tbl_penjual SET id_toko = '${data.id_toko}', role = '${data.role}' WHERE id_penjual = '${id_penjual}'`,
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      },
+    );
+  });
+}
+
 async function updateRoleKaryawan(formData) {
   return new Promise((resolve, reject) => {
     connection.query(
@@ -87,5 +101,6 @@ module.exports = {
   showPenjualById,
   insertPenjual,
   updateFkPenjual,
+  editPenjual,
   updateRoleKaryawan,
 };

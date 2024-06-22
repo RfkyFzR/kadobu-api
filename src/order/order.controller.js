@@ -48,28 +48,34 @@ router.get('/', apiKeyMiddleware, async (req, res) => {
     const statusOrder = req.query.status;
     let responseOrder;
     let query;
+    let message = '';
     if (userId) {
       if (statusOrder) {
         responseOrder = await getOrdersByUserIdAndStatus(userId, statusOrder);
+        message = `Get Orders By Id Pembeli And Status ${statusOrder}`;
       } else {
         responseOrder = await getOrdersByUserId(userId);
+        message = `Get Orders By Id Pembeli`;
       }
     } else if (storeId) {
       responseOrder = await getOrdersByStoreId(storeId);
+      message = `Get Orders By Id Store`;
     } else {
       responseOrder = await getOrders(find);
+      message = `Get All Orders`;
+
       query = 'cari all';
     }
     if (responseOrder.length !== 0) {
       return res.status(200).json({
         status: true,
-        message: 'List Data Order ',
+        message,
         data: responseOrder,
       });
     }
     return res.status(200).json({
       status: true,
-      message: 'Success: Order tidak ditemukan!',
+      message: `FAIL DATA NOT FOUND: ${userId} ${message}`,
       data: responseOrder,
     });
   } catch (error) {
@@ -126,14 +132,9 @@ router.post(
   '/',
   apiKeyMiddleware,
   upload.none(),
-  [
-    body('idPembeli').notEmpty(),
-    body('kodeProduk').notEmpty(),
-    body('keterangan').notEmpty(),
-    body('totalPesanan').notEmpty(),
-    body('idPenjual').notEmpty(),
-  ],
-  async (req, res) => {
+  [body('idPembeli').notEmpty(), body('listKeranjang').notEmpty()],
+
+  async (req, res) https://github.com/security=> {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({
@@ -156,17 +157,18 @@ router.post(
           keterangan: req.body.keterangan,
           total_pesanan: req.body.totalPesanan,
           jenis_pembayaran: 'bayar_ditempat',
+          catatan: req.body.catatan,
         };
         order = await createGuestOrder(formData);
       } else {
         formData = {
-          kode_pesanan: req.body.kodePesanan,
+          kode_pesanan: null,
+          jenis_pembayaran: null,
           status: 'PENDING',
+          total_harga: null,
           id_pembeli: req.body.idPembeli,
-          kode_produk: req.body.kodeProduk,
-          keterangan: req.body.keterangan,
-          total_pesanan: req.body.totalPesanan,
-          total_harga: req.body.totalHarga,
+          snap_token: null,
+          list_keranjang: req.body.listKeranjang,
         };
         order = await createOrder(formData);
       }

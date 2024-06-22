@@ -3,7 +3,7 @@ const {
   showWishlistByIdProdukAndIdPembeli,
   insertWishlist,
   deleteWishlist,
-} = require("./wishlist.repository.js");
+} = require('./wishlist.repository.js');
 
 async function getWishlistByIdPembeli(id_pembeli) {
   try {
@@ -16,7 +16,10 @@ async function getWishlistByIdPembeli(id_pembeli) {
 
 async function getWishlistByIdProdukAndIdPembeli(kode_produk, id_pembeli) {
   try {
-    const wishlist = await showWishlistByIdProdukAndIdPembeli(kode_produk, id_pembeli);
+    const wishlist = await showWishlistByIdProdukAndIdPembeli(
+      kode_produk,
+      id_pembeli,
+    );
     return wishlist;
   } catch (error) {
     throw error;

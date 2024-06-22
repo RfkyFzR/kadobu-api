@@ -4,15 +4,16 @@ const {
   insertKeranjang,
   deleteKeranjang,
   findKeranjangById,
-} = require("./keranjang.repository.js");
+} = require('./keranjang.repository.js');
 
-const { getOrderById } = require("../order/order.service.js");
+const { getOrderById } = require('../order/order.service.js');
 
-const { getKatalogByProductCode } = require("../katalog/katalog.service.js");
+const { getKatalogByProductCode } = require('../katalog/katalog.service.js');
 
 async function getKeranjangByIdPembeli(id_pembeli) {
   try {
     const keranjang = await showKeranjangByIdPembeli(id_pembeli);
+
     return keranjang;
   } catch (error) {
     throw error;
@@ -30,9 +31,8 @@ async function getKeranjangByIdToko(id_toko) {
 
 async function createKeranjang(formData) {
   try {
-    const order = await getOrderById(formData.id_order);
-    const katalog = await getKatalogByProductCode(order.kode_produk);
-    formData.total_harga = formData.jumlah_pesanan * katalog.harga_produk;
+    const katalog = await getKatalogByProductCode(formData.kode_produk);
+   formData.total_harga = formData.jumlah_pesanan * katalog.harga_produk;
     const keranjang = await insertKeranjang(formData);
     return keranjang;
   } catch (error) {
@@ -55,7 +55,7 @@ async function getKeranjangById(id_keranjang) {
     if (results.length > 0) {
       return results[0];
     }
-    throw new Error("Keranjang Tidak Ditemukan");
+    throw new Error('Keranjang Tidak Ditemukan');
   } catch (error) {
     throw error;
   }

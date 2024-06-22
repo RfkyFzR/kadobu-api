@@ -29,6 +29,8 @@ async function showStoreById(id) {
         tbl_toko.nama_toko,
         tbl_toko.deskripsi_toko,
         tbl_toko.alamat_toko,
+        tbl_toko.lokasi_toko,
+        tbl_toko.telepon_toko,
         tbl_toko.foto_profil
         FROM tbl_toko
         WHERE id_toko = '${id}'`,

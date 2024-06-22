@@ -26,6 +26,10 @@ const wishlistController = require('./wishlist/wishlist.controller.js');
 const keranjangController = require('./keranjang/keranjang.controller.js');
 const commentController = require('./comment/comment.controller.js');
 const orderNotification = require('./order/notification.controller');
+const statisticsController = require('./statistik/statistik.controller.js');
+const wishlistController = require('./wishlist/wishlist.controller.js');
+const keranjangController = require('./keranjang/keranjang.controller.js');
+
 
 
 app.use(express.static('public'));
@@ -37,6 +41,7 @@ app.use(cookieParser());
 // app.use(route);
 app.use(express.json());
 
+app.use('/statistik', statisticsController);
 app.use('/signup-pembeli', signUpPembeliController);
 app.use('/signup-penjual', signUpPenjualController);
 app.use('/signin-pembeli', signInPembeliController);
@@ -52,6 +57,8 @@ app.use('/wishlist', wishlistController);
 app.use('/keranjang', keranjangController);
 app.use('/comment', commentController);
 app.use('/order/notification', orderNotification);
+app.use('/wishlist', wishlistController);
+app.use('/keranjang', keranjangController);
 
 
 app.listen(port, () => {

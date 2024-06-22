@@ -23,9 +23,17 @@ const {
 const orderCodeGenerator = require("../helper/OrderCodeGenerator.js");
 const { getPembeliById } = require("../pembeli/pembeli.service");
 
-const { MIDTRANS_APP_URL, MIDTRANS_SERVER_KEY } = require("../config/midtrans");
-const { FRONT_END_URL } = require("../config/frontend");
-const { sendEmails } = require('../helper/sendEmails.js');
+const { MIDTRANS_APP_URL, MIDTRANS_SERVER_KEY } = require('../config/midtrans');
+const { FRONT_END_URL } = require('../config/frontend');
+const {
+  getKeranjangById,
+  getKeranjangByIdPembeli,
+} = require('../keranjang/keranjang.service.js');
+const {
+  updateIdOrderKeranjangById,
+  getKeranjangByOrderId,
+} = require('../keranjang/keranjang.repository.js');
+
 
 async function getOrders(kode_pesanan) {
   try {
@@ -37,12 +45,22 @@ async function getOrders(kode_pesanan) {
 }
 async function getOrdersByUserId(userId) {
   try {
-    const users = await showOrdersByUserId(userId);
-    return users;
+    let results = [];
+    const orders = await showOrdersByUserId(userId);
+    for (const order of orders) {
+      const keranjang = await getKeranjangByOrderId(order.id_order);
+      const result = {
+        ...order,
+        keranjang,
+      };
+      results.push(result);
+    }
+    return results;
   } catch (error) {
     throw error;
   }
 }
+
 async function getOrdersByStoreId(storeId) {
   try {
     const users = await showOrdersByStoreId(storeId);
@@ -65,7 +83,7 @@ async function getOrdersByCodeAndStoreId(kode, storeId) {
 }
 async function getOrdersByUserIdAndStatus(userId, status) {
   try {
-    const users = await showOrdersByUserIdAndStatus(userId, status);
+    const users = await showOrdersByUserIdAndStatus(userId, status, '');
     return users;
   } catch (error) {
     throw error;
@@ -107,15 +125,22 @@ async function createGuestOrder(formData) {
 async function createOrder(formData) {
   try {
     //mencari katalog dan menghitung total harga
-    const product = await getKatalogByProductCode(formData.kode_produk);
-    if (product.stok_produk <= 0) {
-      throw new Error('Stock Kosong!');
-    }
+    let item_details = [];
+    let sum = 0;
+    formData.list_keranjang.map(async (keranjang) => {
+      const data = await getKeranjangById(keranjang.id_keranjang);
+      item_details.push({
+        id: data.id_keranjang,
+        price: data.total_harga / data.jumlah_pesanan,
+        quantity: data.jumlah_pesanan,
+        name: data.nama_produk,
+      });
+      sum += data.total_harga;
+    });
     const pembeli = await getPembeliById(formData.id_pembeli);
-    const sum = product.harga_produk * formData.total_pesanan;
     formData.total_harga = sum;
-    //Menambah total penjualan
-    formData.total_penjualan = formData.total_pesanan
+    //mengurangi stok produk dan melakukan update
+
     //generate kode produk
     const primaryKey = orderCodeGenerator(formData.kode_pesanan);
     formData.kode_pesanan = primaryKey;
@@ -127,14 +152,7 @@ async function createOrder(formData) {
         order_id: primaryKey,
         gross_amount: sum,
       },
-      item_details: [
-        {
-          id: product.kode_produk,
-          price: product.harga_produk,
-          quantity: formData.total_pesanan,
-          name: product.nama_produk,
-        },
-      ],
+      item_details,
       customer_details: {
         first_name: pembeli.username,
         email: pembeli.email,
@@ -166,13 +184,15 @@ async function createOrder(formData) {
         Authorization: `${MIDTRANS_SERVER_KEY}`,
       };
     }
-    //mengirim notif ke email bahwa terdapat order masuk
-    const penjual = await getPenjualById(id_penjual);
-    sendEmails(penjual.email, pembeli.username, product.nama_produk)
+    delete formData.list_keranjang;
 
     const order = await insertOrder({
       ...formData,
       snap_token: midtransData.token,
+    });
+
+    item_details.map(async (keranjang) => {
+      await updateIdOrderKeranjangById(keranjang.id, order.insertId);
     });
 
     return {
@@ -180,7 +200,7 @@ async function createOrder(formData) {
       status: 'PENDING',
       customer_name: pembeli.username,
       customer_email: pembeli.email,
-      products: product,
+      item_details,
       snap_token: midtransData.token,
       snap_redirect_url: midtransData.redirect_url,
       // check: {
