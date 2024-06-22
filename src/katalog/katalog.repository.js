@@ -3,7 +3,7 @@ const connection = require('../config/database.js');
 async function showKatalogs(nama_produk) {
   return new Promise((resolve, reject) => {
     connection.query(
-      `SELECT tbl_katalog.kode_produk,
+    `SELECT tbl_katalog.kode_produk,
     tbl_katalog.nama_produk,
     tbl_katalog.deskripsi_produk,
     tbl_katalog.stok_produk,
@@ -16,15 +16,13 @@ async function showKatalogs(nama_produk) {
     FROM tbl_katalog
     INNER JOIN tbl_toko ON tbl_katalog.id_toko = tbl_toko.id_toko
     WHERE tbl_katalog.deleted_at IS NULL
-    AND tbl_katalog.nama_produk LIKE '%%${nama_produk}%%'`,
-      (error, results) => {
-        if (error) {
-          return reject(error);
-        }
-        return resolve(results);
-      },
-    );
-  });
+    AND tbl_katalog.nama_produk LIKE '%%${nama_produk}%%'`, (error, results) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
 }
 
 async function insertKatalog(formData) {
@@ -124,16 +122,30 @@ async function findKatalogByStoreId(store_id) {
 
 async function updateStockProduk(stok_produk, kode_produk) {
   return new Promise((resolve, reject) => {
+    connection.query(`UPDATE tbl_katalog SET stok_produk = '${stok_produk}' WHERE kode_produk = '${kode_produk}'`, (error, results) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
+}
+
+async function countsKatalogsReady(id_toko) {
+  return new Promise((resolve, reject) => {
     connection.query(
-      `UPDATE tbl_katalog SET stok_produk = '${stok_produk}' WHERE kode_produk = '${kode_produk}'`,
-      (error, results) => {
-        if (error) {
-          return reject(error);
-        }
-        return resolve(results);
-      },
-    );
-  });
+    `SELECT COUNT(*) AS total_produk
+    FROM tbl_katalog
+    WHERE deleted_at IS NULL
+    AND status_produk = 'Ready'
+    AND id_toko = '${id_toko}';
+    `, (error, results) => {
+      if (error) {
+        return reject(error)
+      }
+      return resolve(results)
+    });
+  })
 }
 
 module.exports = {
@@ -143,5 +155,6 @@ module.exports = {
   deleteKatalog,
   findKatalogByProductCode,
   updateStockProduk,
+  countsKatalogsReady,
   findKatalogByStoreId,
 };

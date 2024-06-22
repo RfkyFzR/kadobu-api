@@ -5,6 +5,7 @@ const {
   getPembeli,
   getPembeliById,
   addPembeli,
+
 } = require('./pembeli.service.js');
 const upload = require('../helper/fileAttachment.js');
 const apiKeyMiddleware = require('../helper/apiAuth.js');
@@ -33,7 +34,7 @@ router.get('/', apiKeyMiddleware, async (req, res) => {
 });
 
 router.post(
-  '/',
+  "/",
   apiKeyMiddleware,
   upload.any(),
   [

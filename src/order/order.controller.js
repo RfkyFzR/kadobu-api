@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const upload = require('../helper/fileAttachment.js');
+
 const {
   getOrders,
   getOrdersByStoreId,
@@ -95,6 +96,7 @@ router.patch(
     }
     try {
       let id_order = req.params.idOrder;
+
       const responseOrder = await editOrderStatusAndKeterangan(
         id_order,
         req.body.status,
@@ -129,6 +131,7 @@ router.post(
     body('kodeProduk').notEmpty(),
     body('keterangan').notEmpty(),
     body('totalPesanan').notEmpty(),
+    body('idPenjual').notEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
