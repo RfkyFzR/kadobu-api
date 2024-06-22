@@ -92,7 +92,7 @@ router.patch(
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({
-        errors: errors.array(),
+        errors: "Data tidak boleh kosong!",
       });
     }
     let id_toko = req.params.idToko;

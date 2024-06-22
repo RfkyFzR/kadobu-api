@@ -6,8 +6,6 @@ const {
   findKeranjangById,
 } = require('./keranjang.repository.js');
 
-const { getOrderById } = require('../order/order.service.js');
-
 const { getKatalogByProductCode } = require('../katalog/katalog.service.js');
 
 async function getKeranjangByIdPembeli(id_pembeli) {

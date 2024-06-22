@@ -302,4 +302,5 @@ module.exports = {
   showOrdersByUserIdAndStatus,
   findOrderByOrderCode,
   showOrdersByCodeAndStoreId,
+  findOrderById,
 };

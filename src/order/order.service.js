@@ -11,6 +11,7 @@ const {
   findOrderByOrderCode,
   showOrdersByCodeAndStoreId,
   updateOrderStatusAndKeterangan,
+  findOrderById,
 } = require('./order.repository.js');
 const midtransClient = require('midtrans-client');
 const {
@@ -81,6 +82,19 @@ async function getOrdersByCodeAndStoreId(kode, storeId) {
     throw error;
   }
 }
+
+async function getOrderById(id) {
+  try {
+    const users = await findOrderById(id);
+    if (users) {
+      return users[0];
+    }
+    return null;
+  } catch (error) {
+    throw error;
+  }
+}
+
 async function getOrdersByUserIdAndStatus(userId, status) {
   try {
     const users = await showOrdersByUserIdAndStatus(userId, status, '');
@@ -330,4 +344,5 @@ module.exports = {
   getOrdersByUserId,
   getOrdersByUserIdAndStatus,
   createGuestOrder,
+  getOrderById,
 };

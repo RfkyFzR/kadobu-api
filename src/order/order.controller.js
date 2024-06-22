@@ -134,7 +134,7 @@ router.post(
   upload.none(),
   [body('idPembeli').notEmpty(), body('listKeranjang').notEmpty()],
 
-  async (req, res) https://github.com/security=> {
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({

@@ -56,7 +56,7 @@ router.post(
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({
-        errors: errors.array(),
+        errors: "Data tidak boleh kosong!",
       });
     }
     let formData = {
@@ -88,7 +88,7 @@ router.patch('/:id', apiKeyMiddleware, upload.none(), [], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(422).json({
-      errors: errors.array(),
+      errors: "Data tidak boleh kosong!",
     });
   }
   let formData = {
