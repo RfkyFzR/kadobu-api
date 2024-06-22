@@ -3,32 +3,85 @@ const router = express.Router();
 const { body, validationResult } = require("express-validator");
 const {
   getWishlistByIdPembeli,
+  getWishlistByIdProdukAndIdPembeli,
   createWishlist,
   removeWishlist,
 } = require("./wishlist.service.js");
 const upload = require("../helper/fileAttachment.js");
 const apiKeyMiddleware = require("../helper/apiAuth.js");
 
+// router.get("/", apiKeyMiddleware, async (req, res) => {
+//   try {
+//     const find = req.query.id_pembeli;
+//     const wishlist = await getWishlistByIdPembeli(find);
+//     if (wishlist.length !== 0) {
+//       return res.status(200).json({
+//         status: true,
+//         message: `Data Wishlist`,
+//         results: wishlist,
+//       });
+//     }
+//     return res.status(400).json({
+//       status: true,
+//       message: "Fail: Wishlist tidak ditemukan!",
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       status: false,
+//       message: `Error: Get Wishlist by id_pembeli code Fail, ${error.message}`,
+//     });
+//   }
+// });
+
 router.get("/", apiKeyMiddleware, async (req, res) => {
-  try {
-    const find = req.query.id_pembeli;
-    const wishlist = await getWishlistByIdPembeli(find);
-    if (wishlist.length !== 0) {
-      return res.status(200).json({
+  const find = {
+    idPembeli: req.query.id_pembeli,
+    kodeProduk: req.query.kode_produk,
+  };
+  if (find.idPembeli && find.kodeProduk) {
+    try {
+      const wishlist = await getWishlistByIdProdukAndIdPembeli(
+        find.kodeProduk,
+        find.idPembeli
+      );
+      if (wishlist.length !== 0) {
+        return res.status(200).json({
+          status: true,
+          message: `Data Wishlist`,
+          results: wishlist,
+        });
+      }
+      return res.status(400).json({
         status: true,
-        message: `Data Wishlist`,
-        results: wishlist,
+        message: "Fail: Wishlist tidak ditemukan!",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: `Error: Get Wishlist by kode_produk & id_pembeli code Fail, ${error.message}`,
       });
     }
-    return res.status(400).json({
-      status: true,
-      message: "Fail: Wishlist tidak ditemukan!",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: false,
-      message: `Error: Get Wishlist by id_pembeli code Fail, ${error.message}`,
-    });
+  }
+  else if (find.idPembeli) {
+    try {
+      const wishlist = await getWishlistByIdPembeli(find.idPembeli);
+      if (wishlist.length !== 0) {
+        return res.status(200).json({
+          status: true,
+          message: `Data Wishlist`,
+          results: wishlist,
+        });
+      }
+      return res.status(400).json({
+        status: true,
+        message: "Fail: Wishlist tidak ditemukan!",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: `Error: Get Wishlist by id_pembeli code Fail, ${error.message}`,
+      });
+    }
   }
 });
 

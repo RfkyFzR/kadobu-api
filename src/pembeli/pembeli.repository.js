@@ -13,6 +13,19 @@ async function showPembeli() {
     );
   });
 }
+function showPembeliById(id) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `SELECT * FROM tbl_pembeli ORDER BY id desc WHERE id_pembeli = ${id}`,
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      },
+    );
+  });
+}
 
 async function insertPembeli(formData) {
   return new Promise((resolve, reject) => {

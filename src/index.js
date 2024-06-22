@@ -25,6 +25,8 @@ const statisticsController = require('./statistik/statistik.controller.js');
 const wishlistController = require('./wishlist/wishlist.controller.js');
 const keranjangController = require('./keranjang/keranjang.controller.js');
 const commentController = require('./comment/comment.controller.js');
+const orderNotification = require('./order/notification.controller');
+
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
@@ -42,12 +44,15 @@ app.use('/penjual', penjualController);
 app.use('/pembeli', pembeliController);
 app.use('/katalogs', katalogController);
 app.use('/toko', tokoController);
+app.use('/mail', mailController);
 app.use('/invite-staff', inviteStaffController);
 app.use('/order', orderController);
 app.use('/statistik', statisticsController);
 app.use('/wishlist', wishlistController);
 app.use('/keranjang', keranjangController);
 app.use('/comment', commentController);
+app.use('/order/notification', orderNotification);
+
 
 app.listen(port, () => {
   console.log(`Halaman dimuat pada http://localhost:${port}`);

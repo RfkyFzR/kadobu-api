@@ -29,6 +29,22 @@ async function showWishlistByIdPembeli(id_pembeli) {
   });
 }
 
+async function showWishlistByIdProdukAndIdPembeli(kode_produk, id_pembeli) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      ` SELECT COUNT(*) AS is_liked
+        FROM tbl_wishlist
+        WHERE id_pembeli = '${id_pembeli}' AND kode_produk = '${kode_produk}';`,
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      }
+    );
+  });
+}
+
 async function insertWishlist(formData) {
   return new Promise((resolve, reject) => {
     connection.query(
@@ -45,21 +61,22 @@ async function insertWishlist(formData) {
 }
 
 async function deleteWishlist(id_wishlist) {
-    return new Promise((resolve, reject) => {
-      connection.query(
-        `DELETE FROM tbl_wishlist WHERE id_wishlist = '${id_wishlist}'`,
-        (error, results) => {
-          if (error) {
-            return reject(error);
-          }
-          return resolve(results);
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `DELETE FROM tbl_wishlist WHERE id_wishlist = '${id_wishlist}'`,
+      (error, results) => {
+        if (error) {
+          return reject(error);
         }
-      );
-    });
-  }
+        return resolve(results);
+      }
+    );
+  });
+}
 
 module.exports = {
   showWishlistByIdPembeli,
+  showWishlistByIdProdukAndIdPembeli,
   insertWishlist,
   deleteWishlist,
 };
