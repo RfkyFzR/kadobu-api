@@ -51,10 +51,14 @@ router.get('/', apiKeyMiddleware, async (req, res) => {
     let message = '';
     if (userId) {
       if (statusOrder) {
-        responseOrder = await getOrdersByUserIdAndStatus(userId, statusOrder);
+        responseOrder = await getOrdersByUserIdAndStatus(
+          userId,
+          statusOrder,
+          find,
+        );
         message = `Get Orders By Id Pembeli And Status ${statusOrder}`;
       } else {
-        responseOrder = await getOrdersByUserId(userId);
+        responseOrder = await getOrdersByUserId(userId, find);
         message = `Get Orders By Id Pembeli`;
       }
     } else if (storeId) {
@@ -150,16 +154,10 @@ router.post(
       let formData;
       let order;
       if (isGuest && isGuest === 'true') {
-        formData = {
-          status: 'PAID',
-          id_pembeli: 'kadobu-guest',
-          kode_produk: req.body.kodeProduk,
-          keterangan: req.body.keterangan,
-          total_pesanan: req.body.totalPesanan,
-          jenis_pembayaran: 'bayar_ditempat',
-          catatan: req.body.catatan,
-        };
-        order = await createGuestOrder(formData);
+        const kode_produk = req.body.kode_produk;
+        const total_pesanan = req.body.total_pesanan;
+        const catatan = req.body.catatan;
+        await createGuestOrder(kode_produk, total_pesanan, catatan);
       } else {
         formData = {
           kode_pesanan: null,

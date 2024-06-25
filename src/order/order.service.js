@@ -1,4 +1,3 @@
-
 const crypto = require('crypto');
 
 const {
@@ -17,25 +16,24 @@ const midtransClient = require('midtrans-client');
 const {
   findKatalogByProductCode,
   updateStockProduk,
-} = require("../katalog/katalog.repository.js");
-const {
-  findPenjualById,
-} = require ("../penjual/penjual.repository.js")
-const orderCodeGenerator = require("../helper/OrderCodeGenerator.js");
-const { getPembeliById } = require("../pembeli/pembeli.service");
+  decrementStockProduk,
+} = require('../katalog/katalog.repository.js');
+const { findPenjualById } = require('../penjual/penjual.repository.js');
+const orderCodeGenerator = require('../helper/OrderCodeGenerator.js');
+const { getPembeliById } = require('../pembeli/pembeli.service');
 
 const { MIDTRANS_APP_URL, MIDTRANS_SERVER_KEY } = require('../config/midtrans');
 const { FRONT_END_URL } = require('../config/frontend');
 const {
   getKeranjangById,
   getKeranjangByIdPembeli,
+  createKeranjang,
 } = require('../keranjang/keranjang.service.js');
 const {
   updateIdOrderKeranjangById,
   getKeranjangByOrderId,
+  updateStatusAndKeteranganKeranjang,
 } = require('../keranjang/keranjang.repository.js');
-
-
 async function getOrders(kode_pesanan) {
   try {
     const users = await showOrders(kode_pesanan);
@@ -44,12 +42,12 @@ async function getOrders(kode_pesanan) {
     throw error;
   }
 }
-async function getOrdersByUserId(userId) {
+async function getOrdersByUserId(userId, find) {
   try {
     let results = [];
-    const orders = await showOrdersByUserId(userId);
+    const orders = await showOrdersByUserId(userId, find);
     for (const order of orders) {
-      const keranjang = await getKeranjangByOrderId(order.id_order);
+      const keranjang = await getKeranjangByOrderId(order.kode_pesanan);
       const result = {
         ...order,
         keranjang,
@@ -95,9 +93,9 @@ async function getOrderById(id) {
   }
 }
 
-async function getOrdersByUserIdAndStatus(userId, status) {
+async function getOrdersByUserIdAndStatus(userId, status, find) {
   try {
-    const users = await showOrdersByUserIdAndStatus(userId, status, '');
+    const users = await showOrdersByUserIdAndStatus(userId, status, find);
     return users;
   } catch (error) {
     throw error;
@@ -116,21 +114,33 @@ async function getKatalogByProductCode(kode_produk) {
   }
 }
 
-async function createGuestOrder(formData) {
+async function createGuestOrder(kode_produk, total_pesanan, catatan) {
   try {
-    const product = await getKatalogByProductCode(formData.kode_produk);
-    if (product.stok_produk <= 0) {
-      throw new Error('Stock Kosong!');
-    }
-    const sum = product.harga_produk * formData.total_pesanan;
-    const data = {
-      ...formData,
-      kode_pesanan: orderCodeGenerator(formData.kode_pesanan),
-      total_harga: sum,
-    };
+    const katalog = await getKatalogByProductCode(kode_produk);
+    const total_harga = total_pesanan * katalog.harga_produk;
+    await decrementStockProduk(total_pesanan, kode_produk);
 
-    const order = await insertOrder(data);
-    return order;
+    const { insertId } = await insertOrder({
+      kode_pesanan: orderCodeGenerator(),
+      jenis_pembayaran: 'bayar_ditempat',
+      status: 'PAID',
+      total_harga,
+      id_pembeli: 'kadobu-guest',
+      snap_token: '',
+    });
+    let formData = {
+      id_pembeli: 'kadobu-guest',
+      id_order: insertId,
+      kode_produk: kode_produk,
+      jumlah_pesanan: total_pesanan,
+      total_harga: null,
+      catatan: catatan,
+      status_keranjang: 'PAID',
+      keterangan_keranjang: 'Dibayarkan Langsung',
+    };
+    const keranjang = await createKeranjang(formData);
+
+    return keranjang;
   } catch (error) {
     throw error;
   }
@@ -179,10 +189,10 @@ async function createOrder(formData) {
     };
 
     const midtransResponse = await fetch(`${MIDTRANS_APP_URL}`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
         Authorization: `Basic ${authString}`,
       },
       body: JSON.stringify(payload),
@@ -192,8 +202,8 @@ async function createOrder(formData) {
     if (midtransResponse.status !== 201) {
       console.log(midtransResponse.status);
       return {
-        status: "error",
-        message: "Failed to create transaction",
+        status: 'error',
+        message: 'Failed to create transaction',
         data: midtransData,
         Authorization: `${MIDTRANS_SERVER_KEY}`,
       };
@@ -226,14 +236,29 @@ async function createOrder(formData) {
   }
 }
 
-async function editOrderStatusAndPayment(id_order, status, payment_type) {
+async function editOrderStatusAndPayment(
+  id_order,
+  status,
+  keterangan,
+  payment_type,
+) {
   try {
     const order = await updateOrderStatusAndPayment(
       id_order,
       status,
       payment_type,
     );
-    return order;
+    const results = [];
+    const keranjangs = await getKeranjangByOrderId(id_order);
+    keranjangs.map(async (keranjang) => {
+      const result = await updateStatusAndKeteranganKeranjang(
+        keranjang.id_keranjang,
+        status,
+        keterangan,
+      );
+      results.push(result);
+    });
+    return { resultsOrder: order, resultsKeranjang: results, keranjangs };
   } catch (error) {
     throw error;
   }
@@ -296,6 +321,7 @@ async function updateStatusBasedOnMidtransResponse(transaction_id, data) {
       const transaction = await editOrderStatusAndPayment(
         transaction_id,
         'PAID',
+        'Pesanan Sudah Dibayarkan',
         paymentType,
       );
       responseData = transaction;
@@ -304,6 +330,7 @@ async function updateStatusBasedOnMidtransResponse(transaction_id, data) {
     const transaction = await editOrderStatusAndPayment(
       transaction_id,
       'PAID',
+      'Pesanan Sudah Dibayarkan',
       paymentType,
     );
     responseData = transaction;
@@ -315,6 +342,7 @@ async function updateStatusBasedOnMidtransResponse(transaction_id, data) {
     const transaction = await editOrderStatusAndPayment(
       transaction_id,
       'CANCELED',
+      'Pesanan Gagal Dibayarkan',
       '',
     );
     responseData = transaction;
@@ -322,6 +350,7 @@ async function updateStatusBasedOnMidtransResponse(transaction_id, data) {
     const transaction = await editOrderStatusAndPayment(
       transaction_id,
       'PENDING',
+      'Pesanan Belum Dibayarkan',
       '',
     );
     responseData = transaction;

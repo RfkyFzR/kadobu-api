@@ -7,6 +7,7 @@ const {
   createKatalog,
   removeKatalog,
   editKatalog,
+  getKatalogsByCategory,
   getKatalogByProductCode,
 } = require('./katalog.service.js');
 const upload = require('../helper/fileAttachment.js');
@@ -39,9 +40,12 @@ router.get('/', apiKeyMiddleware, async (req, res) => {
   try {
     const find = req.query.cari || '';
     const storeId = req.query.storeId;
+    const category = req.query.category;
     let responseKatalog;
     if (storeId) {
       responseKatalog = await getKatalogByStoreId(storeId);
+    } else if (category) {
+      responseKatalog = await getKatalogsByCategory(category);
     } else {
       responseKatalog = await getKatalogs(find);
     }
@@ -54,7 +58,8 @@ router.get('/', apiKeyMiddleware, async (req, res) => {
     }
     return res.status(200).json({
       status: true,
-      message: 'Success: Katalog tidak ditemukan!',
+      message: 'Successs: Katalogs tidak ditemukan!',
+      data: [],
     });
   } catch (error) {
     return res.status(500).json({
@@ -75,6 +80,7 @@ router.post(
     body('hargaProduk').notEmpty(),
     body('status').notEmpty(),
     body('idToko').notEmpty(),
+    body('idKategori').notEmpty(),
   ],
   async (req, res) => {
     if (req.fileValidationError) {
@@ -107,6 +113,7 @@ router.post(
         foto_produk: req.file.filename,
         status_produk: req.body.status,
         id_toko: req.body.idToko,
+        id_kategori: req.body.idKategori,
       };
       await createKatalog(formData);
       return res.status(200).json({
@@ -134,6 +141,7 @@ router.patch(
     body('stokProduk').notEmpty(),
     body('hargaProduk').notEmpty(),
     body('status').notEmpty(),
+    body('idKategori').notEmpty(),
   ],
   async (req, res) => {
     if (req.fileValidationError) {
@@ -154,6 +162,7 @@ router.patch(
       stok_produk: req.body.stokProduk,
       harga_produk: req.body.hargaProduk,
       status_produk: req.body.status,
+      id_kategori: req.body.idKategori,
     };
     const id = req.params.id;
     try {
@@ -193,6 +202,7 @@ router.delete('/(:kode_produk)', apiKeyMiddleware, async (req, res) => {
     return res.status(400).json({
       status: false,
       message: 'Katalog tidak ditemukan!',
+      data: [],
     });
   } catch (error) {
     return res.status(500).json({

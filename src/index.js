@@ -26,7 +26,7 @@ const orderNotification = require('./order/notification.controller');
 const statisticsController = require('./statistik/statistik.controller.js');
 const wishlistController = require('./wishlist/wishlist.controller.js');
 const keranjangController = require('./keranjang/keranjang.controller.js');
-
+const Connection = require('mysql/lib/Connection.js');
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
@@ -54,9 +54,6 @@ app.use('/order/notification', orderNotification);
 app.use('/wishlist', wishlistController);
 app.use('/keranjang', keranjangController);
 
-
 app.listen(port, () => {
   console.log(`Halaman dimuat pada http://localhost:${port}`);
 });
-
-module.exports = connection;

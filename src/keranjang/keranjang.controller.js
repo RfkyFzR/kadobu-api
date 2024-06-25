@@ -6,9 +6,47 @@ const {
   getKeranjangByIdToko,
   createKeranjang,
   removeKeranjang,
+  getKeranjangByIdAndIdToko,
 } = require('./keranjang.service.js');
 const upload = require('../helper/fileAttachment.js');
 const apiKeyMiddleware = require('../helper/apiAuth.js');
+const {
+  updateStatusAndKeteranganKeranjang,
+} = require('./keranjang.repository.js');
+
+router.get('/:id', apiKeyMiddleware, async (req, res) => {
+  try {
+    // return res.status(200).json({
+    //   status: true,
+    //   id: req.params.id,
+    //   idToko: req.query.id_toko,
+    // });
+    const id_toko = req.query.id_toko;
+    const id = req.params.id;
+    const response = await getKeranjangByIdAndIdToko(id, id_toko);
+    return res.status(200).json({
+      status: true,
+      message: `Data Keranjang ${id}`,
+      data: response,
+    });
+    // if (responseKatalog.length !== 0) {
+    //   return res.status(200).json({
+    //     status: true,
+    //     message: `Data Katalog ${kode_produk}`,
+    //     data: responseKatalog,
+    //   });
+    // }
+    // return res.status(400).json({
+    //   status: true,
+    //   message: 'Fail: Katalog tidak ditemukan!',
+    // });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: `Error: Get Katalog by product code Fail, ${error.message}`,
+    });
+  }
+});
 
 router.get('/', apiKeyMiddleware, async (req, res) => {
   const find = req.query.id_pembeli || req.query.id_toko;
@@ -87,6 +125,7 @@ router.post(
         kode_produk: req.body.kodeProduk,
         jumlah_pesanan: req.body.jumlahPesanan,
         total_harga: null,
+        status_keranjang: 'NOT_PAID',
         catatan: req.body.catatan || '',
       };
       await createKeranjang(formData);
@@ -94,6 +133,49 @@ router.post(
         status: true,
         message: 'Keranjang berhasil ditambahkan!',
         data: formData,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: false,
+        message: `Error: Post Keranjang Fail, ${error.message}`,
+        error,
+      });
+    }
+  },
+);
+router.patch(
+  '/:id',
+  apiKeyMiddleware,
+  upload.none(),
+  [body('status').notEmpty(), body('keterangan').notEmpty()],
+  async (req, res) => {
+    if (req.fileValidationError) {
+      return res.status(400).json({
+        status: false,
+        message: req.fileValidationError,
+      });
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({
+        status: false,
+        message: 'Data tidak boleh kosong',
+        errors: errors.array(),
+      });
+    }
+    try {
+      await updateStatusAndKeteranganKeranjang(
+        req.params.id,
+        req.body.status,
+        req.body.keterangan,
+      );
+      return res.status(200).json({
+        status: true,
+        message: 'Keranjang berhasil Update!',
+        data: {
+          status: req.body.status,
+          keterangan: req.body.keterangan,
+        },
       });
     } catch (error) {
       return res.status(500).json({
@@ -118,7 +200,6 @@ router.delete('/(:id_keranjang)', apiKeyMiddleware, async (req, res) => {
     return res.status(400).json({
       status: false,
       message: 'Keranjang tidak ditemukan!',
-
     });
   } catch (error) {
     return res.status(500).json({

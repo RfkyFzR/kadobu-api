@@ -3,6 +3,7 @@ const {
   insertKatalog,
   updateKatalog,
   deleteKatalog,
+  showKatalogsByCategory,
   findKatalogByProductCode,
   findKatalogByStoreId,
 } = require('./katalog.repository.js');
@@ -13,6 +14,14 @@ const { datePicker } = require('../helper/datePicker.js');
 async function getKatalogs(nama_produk) {
   try {
     const users = await showKatalogs(nama_produk);
+    return users;
+  } catch (error) {
+    throw error;
+  }
+}
+async function getKatalogsByCategory(category) {
+  try {
+    const users = await showKatalogsByCategory(category);
     return users;
   } catch (error) {
     throw error;
@@ -93,4 +102,5 @@ module.exports = {
   removeKatalog,
   getKatalogByProductCode,
   getKatalogByStoreId,
+  getKatalogsByCategory,
 };

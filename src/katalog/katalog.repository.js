@@ -29,6 +29,37 @@ async function showKatalogs(nama_produk) {
     );
   });
 }
+async function showKatalogsByCategory(category) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `SELECT tbl_katalog.kode_produk,
+              tbl_katalog.nama_produk,
+              tbl_katalog.deskripsi_produk,
+              tbl_katalog.stok_produk,
+              tbl_katalog.harga_produk,
+              tbl_katalog.status_produk,
+              tbl_katalog.foto_produk,
+              tbl_katalog.created_at,
+              tbl_toko.nama_toko,
+              tbl_toko.alamat_toko,
+              tbl_toko.id_toko,
+              tbl_kategori.nama_kategori
+       FROM tbl_katalog
+       INNER JOIN tbl_kategori ON tbl_katalog.id_kategori = tbl_kategori.id_kategori
+       INNER JOIN tbl_toko ON tbl_katalog.id_toko = tbl_toko.id_toko
+       WHERE tbl_katalog.deleted_at IS NULL
+       AND tbl_katalog.stok_produk > 0
+       AND tbl_kategori.nama_kategori = ?`,
+      [category],
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      },
+    );
+  });
+}
 
 async function insertKatalog(formData) {
   return new Promise((resolve, reject) => {
@@ -86,12 +117,14 @@ async function findKatalogByProductCode(kode_produk) {
     tbl_katalog.foto_produk,
     tbl_katalog.created_at,
     tbl_toko.nama_toko,
-tbl_toko.alamat_toko,
     tbl_toko.alamat_toko,
     tbl_toko.foto_profil,
-    tbl_toko.id_toko
+    tbl_toko.id_toko,
+    tbl_kategori.nama_kategori,
+    tbl_kategori.id_kategori
     FROM tbl_katalog
     INNER JOIN tbl_toko ON tbl_katalog.id_toko = tbl_toko.id_toko
+    INNER JOIN tbl_kategori ON tbl_katalog.id_kategori = tbl_kategori.id_kategori
     WHERE tbl_katalog.deleted_at IS NULL AND tbl_katalog.kode_produk = '${kode_produk}' AND deleted_at IS NULL`,
       (error, results, data) => {
         if (error) {
@@ -102,6 +135,7 @@ tbl_toko.alamat_toko,
     );
   });
 }
+
 async function findKatalogByStoreId(store_id) {
   return new Promise((resolve, reject) => {
     connection.query(
@@ -114,7 +148,7 @@ async function findKatalogByStoreId(store_id) {
     tbl_katalog.foto_produk,
     tbl_katalog.created_at,
     tbl_toko.nama_toko,
-tbl_toko.alamat_toko,
+    tbl_toko.alamat_toko,
     tbl_toko.id_toko
     FROM tbl_katalog
     INNER JOIN tbl_toko ON tbl_katalog.id_toko = tbl_toko.id_toko
@@ -131,30 +165,50 @@ tbl_toko.alamat_toko,
 
 async function updateStockProduk(stok_produk, kode_produk) {
   return new Promise((resolve, reject) => {
-    connection.query(`UPDATE tbl_katalog SET stok_produk = '${stok_produk}' WHERE kode_produk = '${kode_produk}'`, (error, results) => {
-      if (error) {
-        return reject(error)
-      }
-      return resolve(results)
-    });
-  })
+    connection.query(
+      `UPDATE tbl_katalog SET stok_produk = '${stok_produk}' WHERE kode_produk = '${kode_produk}'`,
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      },
+    );
+  });
+}
+
+async function decrementStockProduk(amount, kode_produk) {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `UPDATE tbl_katalog SET stok_produk = stok_produk - ? WHERE kode_produk = ?`,
+      [amount, kode_produk],
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      },
+    );
+  });
 }
 
 async function countsKatalogsReady(id_toko) {
   return new Promise((resolve, reject) => {
     connection.query(
-    `SELECT COUNT(*) AS total_produk
+      `SELECT COUNT(*) AS total_produk
     FROM tbl_katalog
     WHERE deleted_at IS NULL
     AND status_produk = 'Ready'
     AND id_toko = '${id_toko}';
-    `, (error, results) => {
-      if (error) {
-        return reject(error)
-      }
-      return resolve(results)
-    });
-  })
+    `,
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      },
+    );
+  });
 }
 
 async function countsKatalogsReady(id_toko) {
@@ -175,6 +229,7 @@ AND status_produk = 'Ready'
     );
   });
 }
+
 module.exports = {
   countsKatalogsReady,
   showKatalogs,
@@ -183,6 +238,7 @@ module.exports = {
   deleteKatalog,
   findKatalogByProductCode,
   updateStockProduk,
-  countsKatalogsReady,
+  decrementStockProduk,
   findKatalogByStoreId,
+  showKatalogsByCategory,
 };

@@ -8,10 +8,11 @@ const {
 
 const { updateFkPenjual } = require('../penjual/penjual.repository.js');
 const { removeFile } = require('../helper/fileRemover.js');
+const { findKatalogByStoreId } = require('../katalog/katalog.repository.js');
 
 async function getKatalogsAndStoreById(id) {
   try {
-    const katalog = await showKatalogsByIdStore(id);
+    const katalog = await findKatalogByStoreId(id);
     const store = await showStoreById(id);
     return {
       ...store[0],
